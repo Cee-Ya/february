@@ -30,13 +30,17 @@ func Result(ctx *gin.Context) *Response {
 // Dangers 用于处理错误
 func (r *Response) Dangers(err error) *Response {
 	if err != nil {
-		log.ErrorF(r.Ctx, "response err:: ", zap.Error(err))
+		ctx := common.GetTraceCtx(r.Ctx)
+		log.ErrorF(ctx, "Dangers:: ", zap.Error(err))
 		r.Error(err)
 	}
 	return r
 }
 
 func (r *Response) Ok(data interface{}) {
+	if r.Code > 0 {
+		return
+	}
 	r.Code = consts.Success
 	r.Data = &data
 	r.render()

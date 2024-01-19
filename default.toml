@@ -5,8 +5,8 @@ Port = 2323
 Director = "logs"
 StacktraceKey = "trace"
 LogInConsole = true
-# LowercaseLevelEncoder 小写编码器(默认) ,LowercaseColorLevelEncoder 小写带颜色编码器, CapitalLevelEncoder 大写编码器, CapitalColorLevelEncoder 大写带颜色编码器, LowercaseColorLevelEncoder 小写带颜色编码器
-EncodeLevel = "CapitalLevelEncoder"
+# LowercaseLevelEncoder 小写编码器(默认) ,LowercaseColorLevelEncoder 小写带颜色编码器, CapitalLevelEncoder 大写编码器, CapitalColorLevelEncoder 大写带颜色编码器
+EncodeLevel = "CapitalColorLevelEncoder"
 Format = "txt"
 
 [DB]

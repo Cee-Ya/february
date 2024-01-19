@@ -77,7 +77,10 @@ func GinLogger() gin.HandlerFunc {
 
 func NoRoute() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		render.Result(c).Error(errors.New("router not found"))
+		ctx := common.GetTraceCtx(c)
+		log.WarnF(ctx, "NoRoute::", zap.String("path", c.Request.URL.Path))
+		render.Result(c).Fail("404")
+		c.Abort()
 	}
 }
 
