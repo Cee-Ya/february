@@ -15,8 +15,8 @@ func main() {
 	config.InitConfig("default", "toml", "./")
 
 	r := gin.New()
-	r.Use(mid.Cors(), mid.GinLogger(), mid.GinRecovery(true))
 	r.NoRoute(mid.NoRoute())
+	r.Use(mid.Cors(), mid.GinLogger(), mid.GinRecovery(true))
 	router.AuthRouter(r.Group("/user"))
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", common.GlobalConfig.Server.Port),

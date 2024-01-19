@@ -8,6 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type BaseServiceInterface interface {
+	TableName() string
+}
+
 type BaseService[T any] struct {
 	ctx context.Context
 }
@@ -28,16 +32,29 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 	return nil
 }
 
-// Update 更新
-func (b *BaseService[T]) Update(entity T, tx *gorm.DB) error {
+// UpdateNotNull 更新
+func (b *BaseService[T]) UpdateNotNull(entity T, tx *gorm.DB) error {
 	if tx == nil {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Save(entity).Error; err != nil {
+		log.ErrorF(b.ctx, "update not null err:: ", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+// Update 更新
+func (b *BaseService[T]) Update(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
+	if tx == nil {
+		tx = common.Ormx
+	}
+	if err := tx.WithContext(b.ctx).Where("id = ?", id).Updates(attrs).Error; err != nil {
 		log.ErrorF(b.ctx, "update err:: ", zap.Error(err))
 		return err
 	}
 	return nil
+
 }
 
 //// DeleteById 根据id删除
@@ -45,7 +62,7 @@ func (b *BaseService[T]) Update(entity T, tx *gorm.DB) error {
 //	if tx == nil {
 //		tx = common.Ormx
 //	}
-//	if err := tx.Where("id = ?", id).Delete(T{}).Error; err != nil {
+//	if err := tx.WithContext(b.ctx).Where("id = ?", id).Delete(T).Error; err != nil {
 //		log.ErrorF(b.ctx, "delete by id err: %v", zap.Error(err))
 //		return err
 //	}
@@ -65,7 +82,7 @@ func (b *BaseService[T]) FindById(id uint64) (*T, error) {
 // FindList 查询列表
 func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB) ([]T, error) {
 	var list []T
-	db := common.Ormx.WithContext(b.ctx)
+	db := common.Ormx
 	if condition != nil {
 		db = condition(db)
 	}

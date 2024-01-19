@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func List(ctx *gin.Context) {
+func GetUserList(ctx *gin.Context) {
 	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindList(nil)
 	render.Result(ctx).Dangers(errors.Wrap(err, "user list err::")).Ok(res)
 }

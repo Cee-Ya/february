@@ -20,27 +20,27 @@ func InitZap() {
 		fmt.Printf("create %v directory\n", common.GlobalConfig.Zap.Director)
 		_ = os.Mkdir(common.GlobalConfig.Zap.Director, os.ModePerm)
 	}
-	// 调试级别
-	debugPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev == zap.DebugLevel
-	})
+	//// 调试级别
+	//debugPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
+	//	return lev == zap.DebugLevel
+	//})
 	// 日志级别
 	infoPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev == zap.InfoLevel
+		return lev >= zap.DebugLevel
 	})
-	// 警告级别
-	warnPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev == zap.WarnLevel
-	})
-	// 错误级别
-	errorPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev >= zap.ErrorLevel
-	})
+	//// 警告级别
+	//warnPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
+	//	return lev == zap.WarnLevel
+	//})
+	//// 错误级别
+	//errorPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
+	//	return lev >= zap.ErrorLevel
+	//})
 	cores := [...]zapcore.Core{
-		getEncoderCore(fmt.Sprintf("./%s/server_debug.log", common.GlobalConfig.Zap.Director), debugPriority),
-		getEncoderCore(fmt.Sprintf("./%s/server_info.log", common.GlobalConfig.Zap.Director), infoPriority),
-		getEncoderCore(fmt.Sprintf("./%s/server_warn.log", common.GlobalConfig.Zap.Director), warnPriority),
-		getEncoderCore(fmt.Sprintf("./%s/server_error.log", common.GlobalConfig.Zap.Director), errorPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/debug.log", common.GlobalConfig.Zap.Director), debugPriority),
+		getEncoderCore(fmt.Sprintf("./%s/log.log", common.GlobalConfig.Zap.Director), infoPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/warn.log", common.GlobalConfig.Zap.Director), warnPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/error.log", common.GlobalConfig.Zap.Director), errorPriority),
 	}
 	logger := zap.New(zapcore.NewTee(cores[:]...), zap.AddCaller(), zap.AddCallerSkip(1))
 	common.Logger = logger
@@ -87,26 +87,24 @@ func getEncoder() zapcore.Encoder {
 
 // getEncoderCore 获取Encoder的zapcore.Core
 func getEncoderCore(fileName string, level zapcore.LevelEnabler) (core zapcore.Core) {
-	writer := GetWriteSyncer(fileName) // 使用file-rotatelogs进行日志分割
+	writer := GetWriteSyncer(fileName)
 	return zapcore.NewCore(getEncoder(), writer, level)
 }
 
-// 自定义日志输出时间格式
+// CustomTimeEncoder 自定义日志输出时间格式
 func CustomTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString(t.Format("2006/01/02 15:04:05"))
+	enc.AppendString(t.Format("2006-01-02 15:04:05"))
 }
 
-// @function: GetWriteSyncer
-// @description: zap logger中加入file-rotatelogs
-// @return: zapcore.WriteSyncer, error
+// GetWriteSyncer zap日志分割
 func GetWriteSyncer(file string) zapcore.WriteSyncer {
 	// 每小时一个文件
 	logf := lumberjack.Logger{
-		Filename:   "logs/log.log", // 日志文件路径
-		MaxSize:    128,            // 每个日志文件保存的大小 单位:M
-		MaxAge:     60,             // 文件最多保存多少天
-		MaxBackups: 30,             // 日志文件最多保存多少个备份
-		Compress:   false,          // 是否压缩
+		Filename:   file,  // 日志文件路径
+		MaxSize:    128,   // 每个日志文件保存的大小 单位:M
+		MaxAge:     60,    // 文件最多保存多少天
+		MaxBackups: 30,    // 日志文件最多保存多少个备份
+		Compress:   false, // 是否压缩
 	}
 	if common.GlobalConfig.Zap.LogInConsole {
 		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&logf))

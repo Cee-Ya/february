@@ -53,9 +53,11 @@ func GinLogger() gin.HandlerFunc {
 		uuidStr := strings.ReplaceAll(uuid.New().String(), "-", "")
 		path := c.Request.URL.Path
 		userId := 0
-		ctx := context.WithValue(context.Background(), consts.TraceKey, &entity.Trace{TraceId: uuidStr, Caller: path, UserId: userId})
+		ctx := context.WithValue(context.Background(), consts.TraceKey, &entity.Trace{TraceId: uuidStr, UserId: userId})
 		dataByte, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(bytes.NewReader(dataByte))
+		// 提前注入traceId
+		common.Ormx = common.Ormx.WithContext(ctx)
 		c.Set(consts.TraceCtx, ctx)
 		c.Next()
 		cost := time.Since(start)
@@ -77,10 +79,11 @@ func GinLogger() gin.HandlerFunc {
 
 func NoRoute() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx := common.GetTraceCtx(c)
-		log.WarnF(ctx, "NoRoute::", zap.String("path", c.Request.URL.Path))
-		render.Result(c).Fail("404")
-		c.Abort()
+		c.JSON(http.StatusNotFound, gin.H{
+			"code":    consts.NotFound,
+			"message": "404, page not exists!",
+		})
+		c.AbortWithStatus(http.StatusNotFound)
 	}
 }
 
