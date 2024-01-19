@@ -12,3 +12,8 @@ func GetUserList(ctx *gin.Context) {
 	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindList(nil)
 	render.Result(ctx).Dangers(errors.Wrap(err, "user list err::")).Ok(res)
 }
+
+func GetPageList(ctx *gin.Context) {
+	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindPageList(nil, GetPage(ctx))
+	render.Result(ctx).Dangers(errors.Wrap(err, "user page list err::")).Ok(res)
+}

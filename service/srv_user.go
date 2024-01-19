@@ -6,9 +6,9 @@ import (
 )
 
 type UserService struct {
-	BaseService[entity.User]
+	*BaseService[entity.User]
 }
 
 func NewUserService(ctx context.Context) *UserService {
-	return &UserService{*NewService[entity.User](ctx)}
+	return &UserService{NewService[entity.User](ctx, &entity.User{})}
 }

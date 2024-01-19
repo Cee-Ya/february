@@ -57,6 +57,18 @@ type BaseEntity struct {
 	Version    int       `gorm:"version" json:"-"`
 }
 
+// Page 分页查询
+type Page struct {
+	PageNo   int `form:"pageNo"`
+	PageSize int `form:"pageSize"`
+}
+
+// PageResult 分页查询结果
+type PageResult[T any] struct {
+	Row   []T   `json:"row"`
+	Total int64 `json:"total"`
+}
+
 // Trace 定义trace结构体
 type Trace struct {
 	TraceId   string  `json:"trace_id"`

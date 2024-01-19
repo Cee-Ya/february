@@ -57,7 +57,7 @@ func GinLogger() gin.HandlerFunc {
 		dataByte, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(bytes.NewReader(dataByte))
 		// 提前注入traceId
-		common.Ormx = common.Ormx.WithContext(ctx)
+		//common.Ormx = common.Ormx.WithContext(ctx)
 		c.Set(consts.TraceCtx, ctx)
 		c.Next()
 		cost := time.Since(start)
