@@ -71,7 +71,7 @@ func GinLogger() gin.HandlerFunc {
 		}
 		zapFields = append(zapFields, zap.String("UserAgent", c.Request.UserAgent()))
 		zapFields = append(zapFields, zap.Duration("Cost", cost))
-		log.InfoF(ctx, "[rest]", zapFields...)
+		log.InfoF(ctx, "REST:: ", zapFields...)
 	}
 }
 
@@ -100,7 +100,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					log.ErrorF(ctx, c.Request.URL.Path,
+					log.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -111,13 +111,13 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				if stack {
 					debug.PrintStack()
-					log.ErrorF(ctx, "[panic]",
+					log.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())),
 					)
 				} else {
-					log.ErrorF(ctx, "[panic]",
+					log.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)

@@ -56,7 +56,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 	switch {
 	case err != nil && l.ZapLogger.Core().Enabled(zap.ErrorLevel):
 		sql, rows := fc()
-		log.ErrorF(ctx, "[gorm]",
+		log.ErrorF(ctx, "SQL::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
@@ -64,7 +64,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 		)
 	case elapsed > 100*time.Millisecond && l.ZapLogger.Core().Enabled(zap.WarnLevel):
 		sql, rows := fc()
-		log.WarnF(ctx, "[gorm-slow]",
+		log.WarnF(ctx, "SQL-SLOW::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
@@ -72,7 +72,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 		)
 	case l.ZapLogger.Core().Enabled(zap.DebugLevel):
 		sql, rows := fc()
-		log.DebugF(ctx, "[gorm]",
+		log.DebugF(ctx, "SQL::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
