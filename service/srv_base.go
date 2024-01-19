@@ -15,6 +15,9 @@ type BaseServiceInterface interface {
 	TableName() string
 }
 
+// BaseService 基础服务
+// T: 实体类型
+// 用于实现基础的增删改查
 type BaseService[T any] struct {
 	BaseServiceInterface
 	ctx context.Context
