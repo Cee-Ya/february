@@ -87,7 +87,7 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 
 // FindById 根据id查询
 func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
-	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).First(&t).Error; err != nil {
+	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Take(&t).Error; err != nil {
 		log.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
 		return
 	}
@@ -95,12 +95,12 @@ func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
 }
 
 // FindOne 查询单个
-func (b *BaseService[T]) FindOne(condition func(where ...interface{}) *gorm.DB) (t *T, err error) {
-	db := common.Ormx.WithContext(b.ctx)
+func (b *BaseService[T]) FindOne(condition func(where *gorm.DB)) (t *T, err error) {
+	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
 	if condition != nil {
-		db = condition(db)
+		condition(db)
 	}
-	if err = db.First(&t).Error; err != nil {
+	if err = db.Take(&t).Error; err != nil {
 		log.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
 		return
 	}
@@ -108,10 +108,10 @@ func (b *BaseService[T]) FindOne(condition func(where ...interface{}) *gorm.DB) 
 }
 
 // FindList 查询列表
-func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB) (ts []T, err error) {
-	db := common.Ormx.WithContext(b.ctx)
+func (b *BaseService[T]) FindList(condition func(where *gorm.DB)) (ts []T, err error) {
+	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
 	if condition != nil {
-		db = condition(db)
+		condition(db)
 	}
 	if err = db.Find(&ts).Error; err != nil {
 		log.ErrorF(b.ctx, errStr+"find list err:: ", zap.Error(err))
@@ -121,10 +121,14 @@ func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB)
 }
 
 // FindPageList 分页查询
-func (b *BaseService[T]) FindPageList(condition func(where ...interface{}) *gorm.DB, page *entity.Page) (res *entity.PageResult[T], err error) {
+func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *entity.Page) (res *entity.PageResult[T], err error) {
+	res = &entity.PageResult[T]{}
 	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
 	if condition != nil {
-		db = condition(db)
+		condition(db)
+	} else {
+		//全局默认按id倒序
+		db.Order("id desc")
 	}
 	if err = db.Count(&res.Total).Error; err != nil {
 		log.ErrorF(b.ctx, errStr+"find page count err:: ", zap.Error(err))
