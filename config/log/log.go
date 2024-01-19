@@ -16,9 +16,9 @@ import (
 
 func InitZap() {
 	// 判断是否有Director文件夹
-	if ok := utils.PathExists(common.GlobalConfig.Zap.Director); !ok {
-		fmt.Printf("create %v directory\n", common.GlobalConfig.Zap.Director)
-		_ = os.Mkdir(common.GlobalConfig.Zap.Director, os.ModePerm)
+	if ok := utils.PathExists(common.GlobalConfig.Log.Director); !ok {
+		fmt.Printf("create %v directory\n", common.GlobalConfig.Log.Director)
+		_ = os.Mkdir(common.GlobalConfig.Log.Director, os.ModePerm)
 	}
 	//// 调试级别
 	//debugPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
@@ -37,10 +37,10 @@ func InitZap() {
 	//	return lev >= zap.ErrorLevel
 	//})
 	cores := [...]zapcore.Core{
-		//getEncoderCore(fmt.Sprintf("./%s/debug.log", common.GlobalConfig.Zap.Director), debugPriority),
-		getEncoderCore(fmt.Sprintf("./%s/log.log", common.GlobalConfig.Zap.Director), infoPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/warn.log", common.GlobalConfig.Zap.Director), warnPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/error.log", common.GlobalConfig.Zap.Director), errorPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/debug.log", common.GlobalConfig.Log.Director), debugPriority),
+		getEncoderCore(fmt.Sprintf("./%s/log.log", common.GlobalConfig.Log.Director), infoPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/warn.log", common.GlobalConfig.Log.Director), warnPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/error.log", common.GlobalConfig.Log.Director), errorPriority),
 	}
 	logger := zap.New(zapcore.NewTee(cores[:]...), zap.AddCaller(), zap.AddCallerSkip(1))
 	common.Logger = logger
@@ -55,7 +55,7 @@ func getEncoderConfig() (config zapcore.EncoderConfig) {
 		TimeKey:        "time",
 		NameKey:        "logger",
 		CallerKey:      "caller",
-		StacktraceKey:  common.GlobalConfig.Zap.StacktraceKey,
+		StacktraceKey:  common.GlobalConfig.Log.StacktraceKey,
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.LowercaseLevelEncoder,
 		EncodeTime:     CustomTimeEncoder,
@@ -63,13 +63,13 @@ func getEncoderConfig() (config zapcore.EncoderConfig) {
 		EncodeCaller:   zapcore.FullCallerEncoder,
 	}
 	switch {
-	case common.GlobalConfig.Zap.EncodeLevel == "LowercaseLevelEncoder": // 小写编码器(默认)
+	case common.GlobalConfig.Log.EncodeLevel == "LowercaseLevelEncoder": // 小写编码器(默认)
 		config.EncodeLevel = zapcore.LowercaseLevelEncoder
-	case common.GlobalConfig.Zap.EncodeLevel == "LowercaseColorLevelEncoder": // 小写编码器带颜色
+	case common.GlobalConfig.Log.EncodeLevel == "LowercaseColorLevelEncoder": // 小写编码器带颜色
 		config.EncodeLevel = zapcore.LowercaseColorLevelEncoder
-	case common.GlobalConfig.Zap.EncodeLevel == "CapitalLevelEncoder": // 大写编码器
+	case common.GlobalConfig.Log.EncodeLevel == "CapitalLevelEncoder": // 大写编码器
 		config.EncodeLevel = zapcore.CapitalLevelEncoder
-	case common.GlobalConfig.Zap.EncodeLevel == "CapitalColorLevelEncoder": // 大写编码器带颜色
+	case common.GlobalConfig.Log.EncodeLevel == "CapitalColorLevelEncoder": // 大写编码器带颜色
 		config.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	default:
 		config.EncodeLevel = zapcore.LowercaseLevelEncoder
@@ -79,7 +79,7 @@ func getEncoderConfig() (config zapcore.EncoderConfig) {
 
 // getEncoder 获取zapcore.Encoder
 func getEncoder() zapcore.Encoder {
-	if common.GlobalConfig.Zap.Format == "json" {
+	if common.GlobalConfig.Log.Format == "json" {
 		return zapcore.NewJSONEncoder(getEncoderConfig())
 	}
 	return zapcore.NewConsoleEncoder(getEncoderConfig())
@@ -106,7 +106,7 @@ func GetWriteSyncer(file string) zapcore.WriteSyncer {
 		MaxBackups: 30,    // 日志文件最多保存多少个备份
 		Compress:   false, // 是否压缩
 	}
-	if common.GlobalConfig.Zap.LogInConsole {
+	if common.GlobalConfig.Log.LogInConsole {
 		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&logf))
 	}
 	return zapcore.AddSync(&logf)

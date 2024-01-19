@@ -9,6 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var errStr = "BaseService err:: "
+
 type BaseServiceInterface interface {
 	TableName() string
 }
@@ -28,7 +30,7 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Create(entity).Error; err != nil {
-		log.ErrorF(b.ctx, "insert err:: ", zap.Error(err))
+		log.ErrorF(b.ctx, errStr+"insert err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -40,7 +42,7 @@ func (b *BaseService[T]) UpdateNotNull(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Save(entity).Error; err != nil {
-		log.ErrorF(b.ctx, "update not null err:: ", zap.Error(err))
+		log.ErrorF(b.ctx, errStr+"update not null err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -52,7 +54,7 @@ func (b *BaseService[T]) Update(id uint64, attrs map[string]interface{}, tx *gor
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Table(b.TableName()).Where("id = ?", id).Updates(attrs).Error; err != nil {
-		log.ErrorF(b.ctx, "update err:: ", zap.Error(err))
+		log.ErrorF(b.ctx, errStr+"update err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -65,7 +67,7 @@ func (b *BaseService[T]) DeleteById(id uint64, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Where("id = ?", id).Delete(b.TableName()).Error; err != nil {
-		log.ErrorF(b.ctx, "delete by id err:: ", zap.Error(err))
+		log.ErrorF(b.ctx, errStr+"delete by id err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -77,50 +79,60 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Delete(entity).Error; err != nil {
-		log.ErrorF(b.ctx, "delete by id err: %v", zap.Error(err))
+		log.ErrorF(b.ctx, errStr+"delete err: %v", zap.Error(err))
 		return err
 	}
 	return nil
 }
 
 // FindById 根据id查询
-func (b *BaseService[T]) FindById(id uint64) (*T, error) {
-	var t T
-	if err := common.Ormx.WithContext(b.ctx).Where("id = ?", id).First(&t).Error; err != nil {
-		log.ErrorF(b.ctx, "find by id err:: ", zap.Error(err))
-		return nil, err
+func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
+	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).First(&t).Error; err != nil {
+		log.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
+		return
 	}
-	return &t, nil
+	return
 }
 
-// FindList 查询列表
-func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB) ([]T, error) {
-	var list []T
+// FindOne 查询单个
+func (b *BaseService[T]) FindOne(condition func(where ...interface{}) *gorm.DB) (t *T, err error) {
 	db := common.Ormx.WithContext(b.ctx)
 	if condition != nil {
 		db = condition(db)
 	}
-	if err := db.Find(&list).Error; err != nil {
-		log.ErrorF(b.ctx, "find list err:: ", zap.Error(err))
-		return nil, err
+	if err = db.First(&t).Error; err != nil {
+		log.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
+		return
 	}
-	return list, nil
+	return
+}
+
+// FindList 查询列表
+func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB) (ts []T, err error) {
+	db := common.Ormx.WithContext(b.ctx)
+	if condition != nil {
+		db = condition(db)
+	}
+	if err = db.Find(&ts).Error; err != nil {
+		log.ErrorF(b.ctx, errStr+"find list err:: ", zap.Error(err))
+		return
+	}
+	return
 }
 
 // FindPageList 分页查询
-func (b *BaseService[T]) FindPageList(condition func(where ...interface{}) *gorm.DB, page *entity.Page) (*entity.PageResult[T], error) {
-	var res entity.PageResult[T]
+func (b *BaseService[T]) FindPageList(condition func(where ...interface{}) *gorm.DB, page *entity.Page) (res *entity.PageResult[T], err error) {
 	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
 	if condition != nil {
 		db = condition(db)
 	}
-	if err := db.Count(&res.Total).Error; err != nil {
-		log.ErrorF(b.ctx, "find page count err:: ", zap.Error(err))
-		return nil, err
+	if err = db.Count(&res.Total).Error; err != nil {
+		log.ErrorF(b.ctx, errStr+"find page count err:: ", zap.Error(err))
+		return
 	}
-	if err := db.Offset((page.PageNo - 1) * page.PageSize).Limit(page.PageSize).Find(&res.Row).Error; err != nil {
-		log.ErrorF(b.ctx, "find page list err:: ", zap.Error(err))
-		return nil, err
+	if err = db.Offset((page.PageNo - 1) * page.PageSize).Limit(page.PageSize).Find(&res.Row).Error; err != nil {
+		log.ErrorF(b.ctx, errStr+"find page list err:: ", zap.Error(err))
+		return
 	}
-	return &res, nil
+	return
 }

@@ -120,7 +120,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 					log.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
+						zap.Stack(common.GlobalConfig.Log.StacktraceKey),
 					)
 				} else {
 					log.ErrorF(ctx, "PANIC::",

@@ -17,13 +17,13 @@ func (t *LocalTime) MarshalJSON() ([]byte, error) {
 // Config 基础配置
 type Config struct {
 	Server Server
-	Zap    ZapConfig
+	Log    LogConfig
 	DB     DB
 	Redis  RedisConfig
 }
 
-// ZapConfig 日志配置
-type ZapConfig struct {
+// LogConfig 日志配置
+type LogConfig struct {
 	Director      string
 	StacktraceKey string
 	EncodeLevel   string
