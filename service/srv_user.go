@@ -10,6 +10,5 @@ type UserService struct {
 }
 
 func NewUserService(ctx context.Context) *UserService {
-	userSvr := &UserService{*NewService[entity.User](ctx)}
-	return userSvr
+	return &UserService{*NewService[entity.User](ctx)}
 }

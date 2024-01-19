@@ -22,7 +22,7 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Create(entity).Error; err != nil {
-		log.ErrorF(b.ctx, "insert err: %v", zap.Error(err))
+		log.ErrorF(b.ctx, "insert err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -34,7 +34,7 @@ func (b *BaseService[T]) Update(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Save(entity).Error; err != nil {
-		log.ErrorF(b.ctx, "update err: %v", zap.Error(err))
+		log.ErrorF(b.ctx, "update err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -56,7 +56,7 @@ func (b *BaseService[T]) Update(entity T, tx *gorm.DB) error {
 func (b *BaseService[T]) FindById(id uint64) (*T, error) {
 	var t T
 	if err := common.Ormx.WithContext(b.ctx).Where("id = ?", id).First(&t).Error; err != nil {
-		log.ErrorF(b.ctx, "find by id err: %v", zap.Error(err))
+		log.ErrorF(b.ctx, "find by id err:: ", zap.Error(err))
 		return nil, err
 	}
 	return &t, nil
@@ -70,7 +70,7 @@ func (b *BaseService[T]) FindList(condition func(where ...interface{}) *gorm.DB)
 		db = condition(db)
 	}
 	if err := db.Find(&list).Error; err != nil {
-		log.ErrorF(b.ctx, "find list err: %v", zap.Error(err))
+		log.ErrorF(b.ctx, "find list err:: ", zap.Error(err))
 		return nil, err
 	}
 	return list, nil

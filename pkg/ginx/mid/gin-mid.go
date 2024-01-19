@@ -4,6 +4,7 @@ import (
 	"ai-report/common"
 	"ai-report/common/consts"
 	"ai-report/config/log"
+	"ai-report/entity"
 	"ai-report/pkg/ginx/render"
 	"bytes"
 	"context"
@@ -52,7 +53,7 @@ func GinLogger() gin.HandlerFunc {
 		uuidStr := strings.ReplaceAll(uuid.New().String(), "-", "")
 		path := c.Request.URL.Path
 		userId := 0
-		ctx := context.WithValue(context.Background(), consts.TraceKey, &common.Trace{TraceId: uuidStr, Caller: path, UserId: userId})
+		ctx := context.WithValue(context.Background(), consts.TraceKey, &entity.Trace{TraceId: uuidStr, Caller: path, UserId: userId})
 		dataByte, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body = io.NopCloser(bytes.NewReader(dataByte))
 		c.Set(consts.TraceCtx, ctx)
@@ -63,7 +64,6 @@ func GinLogger() gin.HandlerFunc {
 		zapFields = append(zapFields, zap.String("Method", c.Request.Method))
 		zapFields = append(zapFields, zap.String("IP", c.ClientIP()))
 		zapFields = append(zapFields, zap.String("Path", path))
-		zapFields = append(zapFields, zap.String("TraceId", uuidStr))
 		zapFields = append(zapFields, zap.String("query", c.Request.URL.RawQuery))
 		zapFields = append(zapFields, zap.String("body", string(dataByte)))
 		if result, ok := c.Get(consts.ResponseData); ok {
@@ -71,7 +71,7 @@ func GinLogger() gin.HandlerFunc {
 		}
 		zapFields = append(zapFields, zap.String("UserAgent", c.Request.UserAgent()))
 		zapFields = append(zapFields, zap.Duration("Cost", cost))
-		log.Info("[request-info]", zapFields...)
+		log.InfoF(ctx, "[rest]", zapFields...)
 	}
 }
 
@@ -86,6 +86,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
+				ctx := common.GetTraceCtx(c)
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool
@@ -99,7 +100,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					log.Error(c.Request.URL.Path,
+					log.ErrorF(ctx, c.Request.URL.Path,
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -110,18 +111,19 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				if stack {
 					debug.PrintStack()
-					log.Error("[Recovery from panic]",
+					log.ErrorF(ctx, "[panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.String("stack", string(debug.Stack())),
 					)
 				} else {
-					log.Error("[Recovery from panic]",
+					log.ErrorF(ctx, "[panic]",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
 				}
-				c.AbortWithStatus(http.StatusInternalServerError)
+				render.Result(c).Error(err.(error))
+				c.Abort()
 			}
 		}()
 		c.Next()

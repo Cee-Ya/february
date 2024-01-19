@@ -4,6 +4,7 @@ import (
 	"ai-report/common"
 	"ai-report/common/consts"
 	"ai-report/common/utils"
+	"ai-report/entity"
 	"context"
 	"fmt"
 	"github.com/natefinch/lumberjack"
@@ -123,7 +124,7 @@ func Debug(tag string, fields ...zap.Field) {
 	Log.logger.Debug(tag, fields...)
 }
 func DebugF(ctx context.Context, tag string, fields ...zap.Field) {
-	trace := ctx.Value(consts.TraceKey).(*common.Trace)
+	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Debug(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
@@ -132,7 +133,7 @@ func Info(tag string, fields ...zap.Field) {
 	Log.logger.Info(tag, fields...)
 }
 func InfoF(ctx context.Context, tag string, fields ...zap.Field) {
-	trace := ctx.Value(consts.TraceKey).(*common.Trace)
+	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Info(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
@@ -141,7 +142,7 @@ func Warn(tag string, fields ...zap.Field) {
 	Log.logger.Warn(tag, fields...)
 }
 func WarnF(ctx context.Context, tag string, fields ...zap.Field) {
-	trace := ctx.Value(consts.TraceKey).(*common.Trace)
+	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Warn(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
@@ -150,7 +151,7 @@ func Error(tag string, fields ...zap.Field) {
 	Log.logger.Error(tag, fields...)
 }
 func ErrorF(ctx context.Context, tag string, fields ...zap.Field) {
-	trace := ctx.Value(consts.TraceKey).(*common.Trace)
+	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Error(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
@@ -159,7 +160,7 @@ func Fatal(tag string, fields ...zap.Field) {
 	Log.logger.Fatal(tag, fields...)
 }
 func FatalF(ctx context.Context, tag string, fields ...zap.Field) {
-	trace := ctx.Value(consts.TraceKey).(*common.Trace)
+	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Fatal(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
