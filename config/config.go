@@ -3,7 +3,7 @@ package config
 import (
 	"ai-report/common"
 	"ai-report/config/log"
-	"ai-report/pkg/orm"
+	"ai-report/pkg/ormx"
 	"fmt"
 	"github.com/spf13/viper"
 )
@@ -12,7 +12,7 @@ import (
 func InitConfig(name, suffix, path string) {
 	LoadConfigFile(name, suffix, path)
 	log.InitZap()
-	orm.InitOrmx()
+	ormx.InitOrmx()
 }
 
 func LoadConfigFile(name, suffix, path string) {

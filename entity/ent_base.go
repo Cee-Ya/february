@@ -3,6 +3,8 @@ package entity
 import (
 	"ai-report/common/consts"
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"time"
 )
 
@@ -51,10 +53,21 @@ type RedisConfig struct {
 
 // BaseEntity 基础业务实体
 type BaseEntity struct {
-	ID         uint64    `gorm:"id"`
-	CreateTime LocalTime `gorm:"create_time"`
-	UpdateTime LocalTime `gorm:"update_time"`
-	Version    int       `gorm:"version" json:"-"`
+	ID         uint64                 `gorm:"id"`
+	CreateTime LocalTime              `gorm:"create_time"`
+	UpdateTime LocalTime              `gorm:"update_time"`
+	Version    optimisticlock.Version `gorm:"version" json:"-"`
+}
+
+func (b *BaseEntity) BeforeSave(tx *gorm.DB) error {
+	b.CreateTime = LocalTime(time.Now())
+	b.UpdateTime = LocalTime(time.Now())
+	return nil
+}
+
+func (b *BaseEntity) BeforeUpdate(tx *gorm.DB) error {
+	b.UpdateTime = LocalTime(time.Now())
+	return nil
 }
 
 // Page 分页查询
