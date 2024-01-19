@@ -54,7 +54,7 @@ type BaseEntity struct {
 	ID         uint64    `gorm:"id"`
 	CreateTime LocalTime `gorm:"create_time"`
 	UpdateTime LocalTime `gorm:"update_time"`
-	Version    int       `gorm:"version"`
+	Version    int       `gorm:"version" json:"-"`
 }
 
 // Trace 定义trace结构体
