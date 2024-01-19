@@ -17,7 +17,7 @@ func main() {
 	r := gin.New()
 	r.NoRoute(mid.NoRoute())
 	r.Use(mid.Cors(), mid.GinLogger(), mid.GinRecovery(true))
-	router.AuthRouter(r.Group("/user"))
+	router.UserRouter(r.Group("/user"))
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", common.GlobalConfig.Server.Port),
 		Handler: r,
