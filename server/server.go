@@ -2,6 +2,7 @@ package server
 
 import (
 	"february/common"
+	"february/common/consts"
 	"february/pkg/config"
 	"february/pkg/httpx"
 	"february/pkg/logx"
@@ -15,7 +16,7 @@ func Initialize(path, configName string) (func(), error) {
 	if configName == "" {
 		configName = "default.toml"
 	}
-	names := strings.Split(configName, ".")
+	names := strings.Split(configName, consts.DOT)
 	config.LoadConfigFile(names[0], names[1], path)
 	logx.Init()
 

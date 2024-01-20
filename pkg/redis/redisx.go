@@ -3,6 +3,7 @@ package redisx
 import (
 	"context"
 	"february/common"
+	"february/common/consts"
 	"february/entity"
 	"fmt"
 	"github.com/redis/go-redis/v9"
@@ -49,7 +50,7 @@ func InitRedis(cfg entity.RedisConfig) error {
 		redisClient = redis.NewClient(redisOptions)
 	case "cluster":
 		redisOptions := &redis.ClusterOptions{
-			Addrs:    strings.Split(cfg.Addr, ","),
+			Addrs:    strings.Split(cfg.Addr, consts.COMMA),
 			Username: cfg.Username,
 			Password: cfg.Password,
 		}
@@ -68,7 +69,7 @@ func InitRedis(cfg entity.RedisConfig) error {
 	case "sentinel":
 		redisOptions := &redis.FailoverOptions{
 			MasterName:       cfg.MasterName,
-			SentinelAddrs:    strings.Split(cfg.Addr, ","),
+			SentinelAddrs:    strings.Split(cfg.Addr, consts.COMMA),
 			Username:         cfg.Username,
 			Password:         cfg.Password,
 			DB:               cfg.DB,
