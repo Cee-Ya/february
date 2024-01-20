@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ai-report/server"
+	"february/server"
 	"fmt"
 	"log"
 	"os"

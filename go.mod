@@ -1,4 +1,4 @@
-module ai-report
+module february
 
 go 1.21
 

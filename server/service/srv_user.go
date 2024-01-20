@@ -1,13 +1,13 @@
 package service
 
 import (
-	"ai-report/common"
-	"ai-report/common/tools"
-	"ai-report/entity"
-	"ai-report/pkg/logx"
-	"ai-report/server/vo"
 	"context"
 	"errors"
+	"february/common"
+	"february/common/tools"
+	"february/entity"
+	"february/pkg/logx"
+	"february/server/vo"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

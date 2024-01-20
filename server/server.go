@@ -1,13 +1,13 @@
 package server
 
 import (
-	"ai-report/common"
-	"ai-report/pkg/config"
-	"ai-report/pkg/httpx"
-	"ai-report/pkg/logx"
-	"ai-report/pkg/ormx"
-	"ai-report/pkg/redisx"
-	"ai-report/server/router"
+	"february/common"
+	"february/pkg/config"
+	"february/pkg/httpx"
+	"february/pkg/logx"
+	"february/pkg/ormx"
+	"february/pkg/redisx"
+	"february/server/router"
 	"strings"
 )
 

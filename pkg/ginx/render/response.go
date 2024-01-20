@@ -1,11 +1,11 @@
 package render
 
 import (
-	"ai-report/common"
-	"ai-report/common/consts"
-	"ai-report/common/tools"
-	"ai-report/entity"
-	"ai-report/pkg/logx"
+	"february/common"
+	"february/common/consts"
+	"february/common/tools"
+	"february/entity"
+	"february/pkg/logx"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"time"

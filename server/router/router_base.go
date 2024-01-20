@@ -1,7 +1,7 @@
 package router
 
 import (
-	"ai-report/entity"
+	"february/entity"
 	"github.com/gin-gonic/gin"
 )
 

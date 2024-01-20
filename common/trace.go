@@ -1,8 +1,8 @@
 package common
 
 import (
-	"ai-report/common/consts"
 	"context"
+	"february/common/consts"
 	"github.com/gin-gonic/gin"
 )
 

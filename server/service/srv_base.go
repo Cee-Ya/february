@@ -1,10 +1,10 @@
 package service
 
 import (
-	"ai-report/common"
-	"ai-report/entity"
-	"ai-report/pkg/logx"
 	"context"
+	"february/common"
+	"february/entity"
+	"february/pkg/logx"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"ai-report/common"
+	"february/common"
 	"fmt"
 	"github.com/spf13/viper"
 )

@@ -1,10 +1,10 @@
 package router
 
 import (
-	"ai-report/common"
-	"ai-report/pkg/ginx/render"
-	"ai-report/server/service"
-	"ai-report/server/vo"
+	"february/common"
+	"february/pkg/ginx/render"
+	"february/server/service"
+	"february/server/vo"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"

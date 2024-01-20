@@ -1,11 +1,11 @@
 package logx
 
 import (
-	"ai-report/common"
-	"ai-report/common/consts"
-	"ai-report/common/tools"
-	"ai-report/entity"
 	"context"
+	"february/common"
+	"february/common/consts"
+	"february/common/tools"
+	"february/entity"
 	"fmt"
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"

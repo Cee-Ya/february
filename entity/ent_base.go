@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"ai-report/common/consts"
-	"ai-report/pkg/tls"
 	"database/sql/driver"
+	"february/common/consts"
+	"february/pkg/tls"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"

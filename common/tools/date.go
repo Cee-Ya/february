@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"ai-report/common/consts"
+	"february/common/consts"
 	"time"
 )
 

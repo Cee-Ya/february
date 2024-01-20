@@ -1,9 +1,9 @@
 package httpx
 
 import (
-	"ai-report/entity"
 	"context"
 	"errors"
+	"february/entity"
 	"fmt"
 	"net/http"
 	"time"

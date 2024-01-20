@@ -1,9 +1,9 @@
 package ormx
 
 import (
-	"ai-report/common"
-	"ai-report/pkg/logx"
 	"context"
+	"february/common"
+	"february/pkg/logx"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"

@@ -1,7 +1,7 @@
 package common
 
 import (
-	"ai-report/entity"
+	"february/entity"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

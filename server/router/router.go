@@ -1,7 +1,7 @@
 package router
 
 import (
-	"ai-report/pkg/ginx/mid"
+	"february/pkg/ginx/mid"
 	"github.com/gin-gonic/gin"
 )
 

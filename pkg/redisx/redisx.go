@@ -1,8 +1,8 @@
 package redisx
 
 import (
-	"ai-report/entity"
 	"context"
+	"february/entity"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"os"

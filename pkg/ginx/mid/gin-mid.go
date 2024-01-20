@@ -1,14 +1,14 @@
 package mid
 
 import (
-	"ai-report/common"
-	"ai-report/common/consts"
-	"ai-report/entity"
-	"ai-report/pkg/ginx/render"
-	"ai-report/pkg/logx"
 	"bytes"
 	"context"
 	"errors"
+	"february/common"
+	"february/common/consts"
+	"february/entity"
+	"february/pkg/ginx/render"
+	"february/pkg/logx"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
