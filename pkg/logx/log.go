@@ -1,9 +1,9 @@
-package log
+package logx
 
 import (
 	"ai-report/common"
 	"ai-report/common/consts"
-	"ai-report/common/utils"
+	"ai-report/common/tools"
 	"ai-report/entity"
 	"context"
 	"fmt"
@@ -14,9 +14,9 @@ import (
 	"time"
 )
 
-func InitZap() {
+func Init() {
 	// 判断是否有Director文件夹
-	if ok := utils.PathExists(common.GlobalConfig.Log.Director); !ok {
+	if ok := tools.PathExists(common.GlobalConfig.Log.Director); !ok {
 		fmt.Printf("create %v directory\n", common.GlobalConfig.Log.Director)
 		_ = os.Mkdir(common.GlobalConfig.Log.Director, os.ModePerm)
 	}
@@ -37,10 +37,10 @@ func InitZap() {
 	//	return lev >= zap.ErrorLevel
 	//})
 	cores := [...]zapcore.Core{
-		//getEncoderCore(fmt.Sprintf("./%s/debug.log", common.GlobalConfig.Log.Director), debugPriority),
-		getEncoderCore(fmt.Sprintf("./%s/log.log", common.GlobalConfig.Log.Director), infoPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/warn.log", common.GlobalConfig.Log.Director), warnPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/error.log", common.GlobalConfig.Log.Director), errorPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/debug.logx", common.GlobalConfig.Log.Director), debugPriority),
+		getEncoderCore(fmt.Sprintf("./%s/logx.logx", common.GlobalConfig.Log.Director), infoPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/warn.logx", common.GlobalConfig.Log.Director), warnPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/error.logx", common.GlobalConfig.Log.Director), errorPriority),
 	}
 	logger := zap.New(zapcore.NewTee(cores[:]...), zap.AddCaller(), zap.AddCallerSkip(1))
 	common.Logger = logger

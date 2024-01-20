@@ -2,6 +2,7 @@ package entity
 
 import (
 	"ai-report/common/consts"
+	"ai-report/pkg/tls"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
@@ -35,20 +36,36 @@ type LogConfig struct {
 
 // Server 服务配置
 type Server struct {
-	Port int
+	Host             string
+	Port             int
+	ShutdownTimeout  int
+	MaxContentLength int64
+	ReadTimeout      int
+	WriteTimeout     int
+	IdleTimeout      int
 }
 
 // DB 数据库配置
 type DB struct {
-	Dsn   string // 连接信息
-	Debug bool   // 是否开启调试模式
+	Dsn          string // 连接信息
+	Debug        bool   // 是否开启调试模式
+	MaxLifetime  int    // 最大连接周期，超过时间的连接就close
+	MaxOpenConns int    // 设置最大连接数
+	MaxIdleConns int    // 设置闲置连接数
 }
 
 // RedisConfig Redis配置
 type RedisConfig struct {
 	Addr     string
+	Username string
 	Password string
 	DB       int
+	UseTLS   bool
+	tls.ClientConfig
+	RedisType        string
+	MasterName       string
+	SentinelUsername string
+	SentinelPassword string
 }
 
 // BaseEntity 基础业务实体

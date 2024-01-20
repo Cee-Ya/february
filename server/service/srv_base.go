@@ -2,8 +2,8 @@ package service
 
 import (
 	"ai-report/common"
-	"ai-report/config/log"
 	"ai-report/entity"
+	"ai-report/pkg/logx"
 	"context"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -33,7 +33,7 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Create(entity).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"insert err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"insert err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -45,7 +45,7 @@ func (b *BaseService[T]) UpdateNotNull(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Save(entity).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"update not null err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"update not null err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -57,7 +57,7 @@ func (b *BaseService[T]) Update(id uint64, attrs map[string]interface{}, tx *gor
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Table(b.TableName()).Where("id = ?", id).Updates(attrs).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"update err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"update err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -70,7 +70,7 @@ func (b *BaseService[T]) DeleteById(id uint64, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Where("id = ?", id).Delete(b.TableName()).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"delete by id err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"delete by id err:: ", zap.Error(err))
 		return err
 	}
 	return nil
@@ -82,7 +82,7 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 		tx = common.Ormx
 	}
 	if err := tx.WithContext(b.ctx).Delete(entity).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"delete err: %v", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"delete err: %v", zap.Error(err))
 		return err
 	}
 	return nil
@@ -91,7 +91,7 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 // FindById 根据id查询
 func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
 	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Take(&t).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -104,7 +104,7 @@ func (b *BaseService[T]) FindOne(condition func(where *gorm.DB)) (t *T, err erro
 		condition(db)
 	}
 	if err = db.Take(&t).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -117,7 +117,7 @@ func (b *BaseService[T]) FindList(condition func(where *gorm.DB)) (ts []T, err e
 		condition(db)
 	}
 	if err = db.Find(&ts).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"find list err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"find list err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -134,11 +134,11 @@ func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *enti
 		db.Order("id desc")
 	}
 	if err = db.Count(&res.Total).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"find page count err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"find page count err:: ", zap.Error(err))
 		return
 	}
 	if err = db.Offset((page.PageNo - 1) * page.PageSize).Limit(page.PageSize).Find(&res.Row).Error; err != nil {
-		log.ErrorF(b.ctx, errStr+"find page list err:: ", zap.Error(err))
+		logx.ErrorF(b.ctx, errStr+"find page list err:: ", zap.Error(err))
 		return
 	}
 	return

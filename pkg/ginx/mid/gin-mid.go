@@ -3,9 +3,9 @@ package mid
 import (
 	"ai-report/common"
 	"ai-report/common/consts"
-	"ai-report/config/log"
 	"ai-report/entity"
 	"ai-report/pkg/ginx/render"
+	"ai-report/pkg/logx"
 	"bytes"
 	"context"
 	"errors"
@@ -73,10 +73,11 @@ func GinLogger() gin.HandlerFunc {
 		}
 		zapFields = append(zapFields, zap.String("UserAgent", c.Request.UserAgent()))
 		zapFields = append(zapFields, zap.Duration("Cost", cost))
-		log.InfoF(ctx, "REST:: ", zapFields...)
+		logx.InfoF(ctx, "REST:: ", zapFields...)
 	}
 }
 
+// NoRoute 404处理
 func NoRoute() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -106,7 +107,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					log.ErrorF(ctx, "PANIC::",
+					logx.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -117,13 +118,13 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 				if stack {
 					debug.PrintStack()
-					log.ErrorF(ctx, "PANIC::",
+					logx.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 						zap.Stack(common.GlobalConfig.Log.StacktraceKey),
 					)
 				} else {
-					log.ErrorF(ctx, "PANIC::",
+					logx.ErrorF(ctx, "PANIC::",
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)

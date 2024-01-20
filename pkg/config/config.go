@@ -2,18 +2,9 @@ package config
 
 import (
 	"ai-report/common"
-	"ai-report/config/log"
-	"ai-report/pkg/ormx"
 	"fmt"
 	"github.com/spf13/viper"
 )
-
-// InitConfig Config init
-func InitConfig(name, suffix, path string) {
-	LoadConfigFile(name, suffix, path)
-	log.InitZap()
-	ormx.InitOrmx()
-}
 
 func LoadConfigFile(name, suffix, path string) {
 	viper.SetConfigName(name)

@@ -1,28 +1,39 @@
 package main
 
 import (
-	"ai-report/common"
-	"ai-report/config"
-	"ai-report/pkg/ginx/mid"
-	"ai-report/router"
+	"ai-report/server"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	// 初始化配置
-	config.InitConfig("default", "toml", "./")
+	cleanFunc, err := server.Initialize("./", "default.toml")
+	if err != nil {
+		log.Fatalln("failed to initialize:", err)
+	}
+	code := 1
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	r := gin.New()
-	r.NoRoute(mid.NoRoute())
-	r.Use(mid.Cors(), mid.GinLogger(), mid.GinRecovery(true))
-	router.UserRouter(r.Group("/user"))
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", common.GlobalConfig.Server.Port),
-		Handler: r,
+EXIT:
+	for {
+		sig := <-sc
+		fmt.Println("received signal:", sig.String())
+		switch sig {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			code = 0
+			break EXIT
+		case syscall.SIGHUP:
+			// reload configuration?
+		default:
+			break EXIT
+		}
 	}
-	if err := srv.ListenAndServe(); err != nil {
-		panic(fmt.Errorf("start server error: %s \n", err))
-	}
+
+	cleanFunc()
+	fmt.Println("process exited")
+	os.Exit(code)
 }

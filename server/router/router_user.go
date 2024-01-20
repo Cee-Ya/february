@@ -3,7 +3,7 @@ package router
 import (
 	"ai-report/common"
 	"ai-report/pkg/ginx/render"
-	"ai-report/service"
+	"ai-report/server/service"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"

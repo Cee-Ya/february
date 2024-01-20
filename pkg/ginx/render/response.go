@@ -3,9 +3,9 @@ package render
 import (
 	"ai-report/common"
 	"ai-report/common/consts"
-	"ai-report/common/utils"
-	"ai-report/config/log"
+	"ai-report/common/tools"
 	"ai-report/entity"
+	"ai-report/pkg/logx"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"time"
@@ -31,7 +31,7 @@ func Result(ctx *gin.Context) *Response {
 func (r *Response) Dangers(err error) *Response {
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
-		log.ErrorF(ctx, "Dangers:: ", zap.Error(err))
+		logx.ErrorF(ctx, "Dangers:: ", zap.Error(err))
 		r.Error(err)
 	}
 	return r
@@ -65,9 +65,9 @@ func (r *Response) Warn(message string) {
 }
 
 func (r *Response) toString() string {
-	data, err := utils.ToJson(r)
+	data, err := tools.ToJson(r)
 	if err != nil {
-		log.ErrorF(r.Ctx, "response to json err:: ", zap.Error(err))
+		logx.ErrorF(r.Ctx, "response to json err:: ", zap.Error(err))
 		r.Error(err)
 		return r.toString()
 	}

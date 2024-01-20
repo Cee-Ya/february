@@ -2,9 +2,9 @@ package ormx
 
 import (
 	"ai-report/common"
-	"ai-report/config/log"
+	"ai-report/pkg/logx"
 	"context"
-	"fmt"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,19 +12,29 @@ import (
 	"time"
 )
 
-func InitOrmx() {
+func Init() error {
 	c := common.GlobalConfig.DB
 	db, err := gorm.Open(mysql.Open(c.Dsn), &gorm.Config{
 		Logger: NewGormLogger(),
 	})
 	if err != nil {
-		panic(fmt.Sprintf("failed to connect database: %v", err))
+		return errors.Wrap(err, "failed to connect database")
 	}
 
 	if c.Debug {
 		db = db.Debug()
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return errors.Wrap(err, "faild to open db")
+	}
+
+	sqlDB.SetMaxIdleConns(c.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(c.MaxOpenConns)
+	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
 	common.Ormx = db
+	return nil
 }
 
 type GormLogger struct {
@@ -40,15 +50,15 @@ func (l *GormLogger) LogMode(lev logger.LogLevel) logger.Interface {
 }
 
 func (l *GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
-	log.InfoF(ctx, str, zap.Any("args", args))
+	logx.InfoF(ctx, str, zap.Any("args", args))
 }
 
 func (l *GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
-	log.WarnF(ctx, str, zap.Any("args", args))
+	logx.WarnF(ctx, str, zap.Any("args", args))
 }
 
 func (l *GormLogger) Error(ctx context.Context, str string, args ...interface{}) {
-	log.ErrorF(ctx, str, zap.Any("args", args))
+	logx.ErrorF(ctx, str, zap.Any("args", args))
 }
 
 func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
@@ -56,7 +66,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 	switch {
 	case err != nil && l.ZapLogger.Core().Enabled(zap.ErrorLevel):
 		sql, rows := fc()
-		log.ErrorF(ctx, "SQL::",
+		logx.ErrorF(ctx, "SQL::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
@@ -64,7 +74,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 		)
 	case elapsed > 100*time.Millisecond && l.ZapLogger.Core().Enabled(zap.WarnLevel):
 		sql, rows := fc()
-		log.WarnF(ctx, "SQL-SLOW::",
+		logx.WarnF(ctx, "SQL-SLOW::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
@@ -72,7 +82,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 		)
 	case l.ZapLogger.Core().Enabled(zap.DebugLevel):
 		sql, rows := fc()
-		log.DebugF(ctx, "SQL::",
+		logx.DebugF(ctx, "SQL::",
 			zap.Error(err),
 			zap.String("sql", sql),
 			zap.Int64("rows", rows),
