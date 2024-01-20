@@ -17,3 +17,11 @@ type User struct {
 func (User) TableName() string {
 	return "t_sys_user"
 }
+
+func (User) EnableRedis() bool {
+	return true
+}
+
+func (User) CacheKey() string {
+	return "cache::user::"
+}

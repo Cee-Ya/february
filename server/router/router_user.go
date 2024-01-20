@@ -2,13 +2,24 @@ package router
 
 import (
 	"february/common"
+	"february/common/tools"
 	"february/pkg/ginx/render"
 	"february/server/service"
 	"february/server/vo"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"gorm.io/gorm"
 )
+
+func GetUser(ctx *gin.Context) {
+	idStr := ctx.Query("id")
+	id, err := tools.Str2Uint64(idStr)
+	if err != nil {
+		render.Result(ctx).Dangers(err)
+		return
+	}
+	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindById(id)
+	render.Result(ctx).Dangers(errors.Wrap(err, "get user err::")).Ok(res)
+}
 
 func AddUser(ctx *gin.Context) {
 	var req vo.UserAddVo
@@ -23,14 +34,20 @@ func AddUser(ctx *gin.Context) {
 	render.Result(ctx).Ok(nil)
 }
 
-func GetUserList(ctx *gin.Context) {
-	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindList(func(where *gorm.DB) {
-		where.Order("id desc")
-	})
-	render.Result(ctx).Dangers(errors.Wrap(err, "user list err::")).Ok(res)
+func UpdateUser(ctx *gin.Context) {
+	var req vo.UserUpdateVo
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		render.Result(ctx).Dangers(err)
+		return
+	}
+	if err := service.NewUserService(common.GetTraceCtx(ctx)).Update(req); err != nil {
+		render.Result(ctx).Dangers(err)
+		return
+	}
+	render.Result(ctx).Ok(nil)
 }
 
 func GetPageList(ctx *gin.Context) {
-	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindPageList(nil, GetPage(ctx))
+	res, err := service.NewUserService(common.GetTraceCtx(ctx)).PageList(GetPage(ctx))
 	render.Result(ctx).Dangers(errors.Wrap(err, "user page list err::")).Ok(res)
 }

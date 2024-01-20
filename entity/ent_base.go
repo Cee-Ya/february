@@ -2,9 +2,11 @@ package entity
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"february/common/consts"
 	"february/pkg/tls"
 	"fmt"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
 	"time"
@@ -18,15 +20,44 @@ func (t *LocalTime) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%v\"", tTime.Format(consts.DateFormatYmdhms))), nil
 }
 
-func (t LocalTime) Value() (driver.Value, error) {
+func (t *LocalTime) UnmarshalJSON(data []byte) error {
+	var timeStr string
+	err := json.Unmarshal(data, &timeStr)
+	if err != nil {
+		return err
+	}
+
+	parsedTime, err := time.Parse(consts.DateFormatYmdhms, timeStr)
+	if err != nil {
+		return err
+	}
+
+	*t = LocalTime(parsedTime)
+	return nil
+}
+
+func (t *LocalTime) Value() (driver.Value, error) {
 	var zeroTime time.Time
-	tlt := time.Time(t)
+	if t == nil {
+		return nil, nil
+	}
+	tlt := time.Time(*t)
 	//判断给定时间是否和默认零时间的时间戳相同
 	if tlt.UnixNano() == zeroTime.UnixNano() {
 		return nil, nil
 	}
 	return tlt, nil
 }
+
+func (t *LocalTime) ToTime() time.Time {
+	return time.Time(*t)
+}
+
+func (t *LocalTime) ToString() string {
+	return time.Time(*t).Format(consts.DateFormatYmdhms)
+}
+
+type Redis redis.Cmdable
 
 // Config 基础配置
 type Config struct {
@@ -77,6 +108,7 @@ type RedisConfig struct {
 	MasterName       string
 	SentinelUsername string
 	SentinelPassword string
+	KeyExpire        time.Duration
 }
 
 // BaseEntity 基础业务实体
@@ -87,7 +119,7 @@ type BaseEntity struct {
 	Version    optimisticlock.Version `gorm:"version" json:"-"`
 }
 
-func (b *BaseEntity) BeforeSave(tx *gorm.DB) error {
+func (b *BaseEntity) BeforeCreate(tx *gorm.DB) error {
 	localTime := LocalTime(time.Now())
 	b.CreateTime = &localTime
 	b.ModifyTime = &localTime
@@ -108,7 +140,7 @@ type Page struct {
 
 // PageResult 分页查询结果
 type PageResult[T any] struct {
-	Row   []T   `json:"row"`
+	Rows  []T   `json:"rows"`
 	Total int64 `json:"total"`
 }
 

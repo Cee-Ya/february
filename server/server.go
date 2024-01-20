@@ -6,7 +6,7 @@ import (
 	"february/pkg/httpx"
 	"february/pkg/logx"
 	"february/pkg/ormx"
-	"february/pkg/redisx"
+	"february/pkg/redis"
 	"february/server/router"
 	"strings"
 )
@@ -25,8 +25,7 @@ func Initialize(path, configName string) (func(), error) {
 	}
 
 	// init redis
-	redisClean, err := redisx.InitRedis(common.GlobalConfig.Redis)
-	if err != nil {
+	if err := redisx.InitRedis(common.GlobalConfig.Redis); err != nil {
 		return nil, err
 	}
 
@@ -37,6 +36,5 @@ func Initialize(path, configName string) (func(), error) {
 	// release all the resources
 	return func() {
 		httpClean()
-		redisClean()
 	}, nil
 }
