@@ -5,9 +5,11 @@ import "gorm.io/plugin/soft_delete"
 // User 用户
 type User struct {
 	BaseEntity
+	Username      string                `gorm:"username"`
+	Password      string                `gorm:"password"`
 	Mobile        string                `gorm:"mobile"`
 	DeleteFlag    soft_delete.DeletedAt `gorm:"column:delete_status" json:"-"`
-	LastLoginTime LocalTime             `gorm:"last_login_time"`
+	LastLoginTime *LocalTime            `gorm:"last_login_time"`
 	Backup        string                `gorm:"backup"`
 }
 

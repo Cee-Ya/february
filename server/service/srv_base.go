@@ -32,7 +32,7 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 	if tx == nil {
 		tx = common.Ormx
 	}
-	if err := tx.WithContext(b.ctx).Create(entity).Error; err != nil {
+	if err := tx.WithContext(b.ctx).Create(&entity).Error; err != nil {
 		logx.ErrorF(b.ctx, errStr+"insert err:: ", zap.Error(err))
 		return err
 	}
@@ -90,7 +90,7 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 
 // FindById 根据id查询
 func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
-	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Take(&t).Error; err != nil {
+	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Limit(1).Find(&t).Error; err != nil {
 		logx.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
 		return
 	}
@@ -103,7 +103,7 @@ func (b *BaseService[T]) FindOne(condition func(where *gorm.DB)) (t *T, err erro
 	if condition != nil {
 		condition(db)
 	}
-	if err = db.Take(&t).Error; err != nil {
+	if err = db.Limit(1).Find(&t).Error; err != nil {
 		logx.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
 		return
 	}

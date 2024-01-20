@@ -15,6 +15,7 @@ func Init() *gin.Engine {
 }
 
 func UserRouter(group *gin.RouterGroup) {
+	group.POST("/add", AddUser)
 	group.GET("/list", GetUserList)
 	group.GET("/page", GetPageList)
 }

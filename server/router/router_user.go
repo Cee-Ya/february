@@ -4,10 +4,24 @@ import (
 	"ai-report/common"
 	"ai-report/pkg/ginx/render"
 	"ai-report/server/service"
+	"ai-report/server/vo"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
+
+func AddUser(ctx *gin.Context) {
+	var req vo.UserAddVo
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		render.Result(ctx).Dangers(err)
+		return
+	}
+	if err := service.NewUserService(common.GetTraceCtx(ctx)).Create(req); err != nil {
+		render.Result(ctx).Dangers(err)
+		return
+	}
+	render.Result(ctx).Ok(nil)
+}
 
 func GetUserList(ctx *gin.Context) {
 	res, err := service.NewUserService(common.GetTraceCtx(ctx)).FindList(func(where *gorm.DB) {

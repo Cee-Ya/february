@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"runtime/debug"
 	"time"
 )
 
@@ -66,6 +67,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 	switch {
 	case err != nil && l.ZapLogger.Core().Enabled(zap.ErrorLevel):
 		sql, rows := fc()
+		debug.PrintStack()
 		logx.ErrorF(ctx, "SQL::",
 			zap.Error(err),
 			zap.String("sql", sql),

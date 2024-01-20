@@ -3,6 +3,7 @@ package entity
 import (
 	"ai-report/common/consts"
 	"ai-report/pkg/tls"
+	"database/sql/driver"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
@@ -15,6 +16,16 @@ type LocalTime time.Time
 func (t *LocalTime) MarshalJSON() ([]byte, error) {
 	tTime := time.Time(*t)
 	return []byte(fmt.Sprintf("\"%v\"", tTime.Format(consts.DateFormatYmdhms))), nil
+}
+
+func (t LocalTime) Value() (driver.Value, error) {
+	var zeroTime time.Time
+	tlt := time.Time(t)
+	//判断给定时间是否和默认零时间的时间戳相同
+	if tlt.UnixNano() == zeroTime.UnixNano() {
+		return nil, nil
+	}
+	return tlt, nil
 }
 
 // Config 基础配置
@@ -71,19 +82,21 @@ type RedisConfig struct {
 // BaseEntity 基础业务实体
 type BaseEntity struct {
 	ID         uint64                 `gorm:"id"`
-	CreateTime LocalTime              `gorm:"create_time"`
-	UpdateTime LocalTime              `gorm:"update_time"`
+	CreateTime *LocalTime             `gorm:"create_time"`
+	ModifyTime *LocalTime             `gorm:"modify_time"`
 	Version    optimisticlock.Version `gorm:"version" json:"-"`
 }
 
 func (b *BaseEntity) BeforeSave(tx *gorm.DB) error {
-	b.CreateTime = LocalTime(time.Now())
-	b.UpdateTime = LocalTime(time.Now())
+	localTime := LocalTime(time.Now())
+	b.CreateTime = &localTime
+	b.ModifyTime = &localTime
 	return nil
 }
 
 func (b *BaseEntity) BeforeUpdate(tx *gorm.DB) error {
-	b.UpdateTime = LocalTime(time.Now())
+	localTime := LocalTime(time.Now())
+	b.ModifyTime = &localTime
 	return nil
 }
 
