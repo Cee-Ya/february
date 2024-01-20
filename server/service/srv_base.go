@@ -39,8 +39,9 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 	return nil
 }
 
-// UpdateNotNull 更新
-func (b *BaseService[T]) UpdateNotNull(entity T, tx *gorm.DB) error {
+// Update 更新
+// entity中的所有字段都会更新，所以如果需要修改某个字段，需要先查询出来，再修改
+func (b *BaseService[T]) Update(entity T, tx *gorm.DB) error {
 	if tx == nil {
 		tx = common.Ormx
 	}
@@ -51,8 +52,8 @@ func (b *BaseService[T]) UpdateNotNull(entity T, tx *gorm.DB) error {
 	return nil
 }
 
-// Update 更新
-func (b *BaseService[T]) Update(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
+// UpdateAttr 更新
+func (b *BaseService[T]) UpdateAttr(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
 	if tx == nil {
 		tx = common.Ormx
 	}
