@@ -54,8 +54,21 @@ func GinLogger() gin.HandlerFunc {
 		path := c.Request.URL.Path
 		userId := 0
 		ctx := context.WithValue(context.Background(), consts.TraceKey, &entity.Trace{TraceId: uuidStr, UserId: userId})
-		dataByte, _ := io.ReadAll(c.Request.Body)
-		c.Request.Body = io.NopCloser(bytes.NewReader(dataByte))
+		var (
+			dataByte []byte
+			err      error
+		)
+		switch c.Request.Method {
+		// 只有在以下请求方法中才读取body
+		case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+			if dataByte, err = io.ReadAll(c.Request.Body); err != nil {
+				logx.ErrorF(ctx, "read body err:: ", zap.Error(err))
+				render.Result(c).Error(err)
+				c.Abort()
+				return
+			}
+			c.Request.Body = io.NopCloser(bytes.NewReader(dataByte))
+		}
 		// 提前注入traceId
 		//common.Ormx = common.Ormx.WithContext(ctx)
 		c.Set(consts.TraceCtx, ctx)
@@ -67,7 +80,11 @@ func GinLogger() gin.HandlerFunc {
 		zapFields = append(zapFields, zap.String("IP", c.ClientIP()))
 		zapFields = append(zapFields, zap.String("Path", path))
 		zapFields = append(zapFields, zap.String("query", c.Request.URL.RawQuery))
-		zapFields = append(zapFields, zap.String("body", string(dataByte)))
+		// 只有在以下请求方法中才打印body
+		switch c.Request.Method {
+		case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+			zapFields = append(zapFields, zap.String("body", string(dataByte)))
+		}
 		if result, ok := c.Get(consts.ResponseData); ok {
 			zapFields = append(zapFields, zap.String("result", result.(string)))
 		}
