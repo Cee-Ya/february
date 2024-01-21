@@ -27,6 +27,16 @@ func Result(ctx *gin.Context) *Response {
 	}
 }
 
+// DangersRender 用于处理错误
+func (r *Response) DangersRender(res any, err error) {
+	if err != nil {
+		ctx := common.GetTraceCtx(r.Ctx)
+		logx.ErrorF(ctx, "DangersRender:: ", zap.Error(err))
+		r.Error(err)
+	}
+	r.Ok(res)
+}
+
 // Dangers 用于处理错误
 func (r *Response) Dangers(err error) *Response {
 	if err != nil {
@@ -50,12 +60,16 @@ func (r *Response) Error(err error) {
 	r.Code = consts.Error
 	r.Message = err.Error()
 	r.render()
+	// 终止
+	r.Ctx.Abort()
 }
 
 func (r *Response) Fail(message string) {
 	r.Code = consts.Failed
 	r.Message = message
 	r.render()
+	// 终止
+	r.Ctx.Abort()
 }
 
 func (r *Response) Warn(message string) {

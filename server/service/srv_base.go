@@ -208,6 +208,9 @@ func (b *BaseService[T]) DeleteByCache(entity T, tx *gorm.DB) error {
 
 // FindById 根据id查询
 func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
+	if id == 0 {
+		return nil, errors.New("id is zero")
+	}
 	if b.EnableRedis() {
 		return b.FindByIdCache(id)
 	} else {
@@ -216,7 +219,7 @@ func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
 }
 
 func (b *BaseService[T]) FindByIdBase(id uint64) (t *T, err error) {
-	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Limit(1).Find(&t).Error; err != nil {
+	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Take(&t).Error; err != nil {
 		logx.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
 		return
 	}
@@ -231,11 +234,9 @@ func (b *BaseService[T]) FindByIdCache(id uint64) (t *T, err error) {
 		return
 	}
 	if t, err = b.FindByIdBase(id); err != nil {
-		logx.ErrorF(b.ctx, errStr+"FindByIdBase err:: ", zap.Error(err))
 		return
 	}
 	if err = b.initCache(id, t); err != nil {
-		logx.ErrorF(b.ctx, errStr+"initCache err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -317,7 +318,6 @@ func (b *BaseService[T]) initCache(key any, t *T) (err error) {
 		return
 	}
 	if err = b.setCache(key, t); err != nil {
-		logx.ErrorF(b.ctx, errStr+"initCache err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -326,11 +326,9 @@ func (b *BaseService[T]) initCache(key any, t *T) (err error) {
 func (b *BaseService[T]) putCache(key any) (err error) {
 	var t *T
 	if t, err = b.FindByIdBase(key.(uint64)); err != nil {
-		logx.ErrorF(b.ctx, errStr+"putCache FindByIdBase err:: ", zap.Error(err))
 		return
 	}
 	if err = b.setCache(key, t); err != nil {
-		logx.ErrorF(b.ctx, errStr+"putCache err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -356,7 +354,6 @@ func (b *BaseService[T]) putCacheByEntity(t *T) (err error) {
 		return
 	}
 	if err = b.putCache(id); err != nil {
-		logx.ErrorF(b.ctx, errStr+"putCacheByEntity err:: ", zap.Error(err))
 		return
 	}
 	return
@@ -417,7 +414,6 @@ func (b *BaseService[T]) getCacheByCheck(key any) (t *T, err error) {
 		}
 	}
 	if t, err = b.getCache(key); err != nil {
-		logx.ErrorF(b.ctx, errStr+"getCache err:: ", zap.Error(err))
 		return
 	}
 	return
