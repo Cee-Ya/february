@@ -29,6 +29,9 @@ func Result(ctx *gin.Context) *Response {
 
 // DangersRender 用于处理错误
 func (r *Response) DangersRender(res any, err error) {
+	if r.Code > 0 {
+		return
+	}
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
 		logx.ErrorF(ctx, "DangersRender:: ", zap.Error(err))
@@ -39,6 +42,9 @@ func (r *Response) DangersRender(res any, err error) {
 
 // Dangers 用于处理错误
 func (r *Response) Dangers(err error) *Response {
+	if r.Code > 0 {
+		return r
+	}
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
 		logx.ErrorF(ctx, "Dangers:: ", zap.Error(err))
@@ -57,6 +63,9 @@ func (r *Response) Ok(data interface{}) {
 }
 
 func (r *Response) Error(err error) {
+	if r.Code > 0 {
+		return
+	}
 	r.Code = consts.Error
 	r.Message = err.Error()
 	r.render()
@@ -65,6 +74,9 @@ func (r *Response) Error(err error) {
 }
 
 func (r *Response) Fail(message string) {
+	if r.Code > 0 {
+		return
+	}
 	r.Code = consts.Failed
 	r.Message = message
 	r.render()
@@ -73,6 +85,9 @@ func (r *Response) Fail(message string) {
 }
 
 func (r *Response) Warn(message string) {
+	if r.Code > 0 {
+		return
+	}
 	r.Code = consts.Warn
 	r.Message = message
 	r.render()
