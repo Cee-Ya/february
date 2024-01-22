@@ -85,6 +85,7 @@ type Server struct {
 	ReadTimeout      int
 	WriteTimeout     int
 	IdleTimeout      int
+	XssWhitelist     []string
 }
 
 // DB 数据库配置

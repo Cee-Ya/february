@@ -13,6 +13,8 @@ ReadTimeout = 20
 WriteTimeout = 40
 # http httpx idle timeout, unit: s
 IdleTimeout = 120
+# xss whitelist
+XssWhitelist = []
 
 [Log]
 # log dir

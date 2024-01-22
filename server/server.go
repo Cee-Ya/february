@@ -31,7 +31,7 @@ func Initialize(path, configName string) (func(), error) {
 	}
 
 	// init http server
-	r := router.Init()
+	r := router.Init(common.GlobalConfig.Server)
 	httpClean := httpx.Init(common.GlobalConfig.Server, r)
 
 	// release all the resources

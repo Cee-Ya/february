@@ -1,15 +1,16 @@
 package router
 
 import (
+	"february/entity"
 	"february/pkg/ginx/mid"
 	"github.com/gin-gonic/gin"
 )
 
 // Init router
-func Init() *gin.Engine {
+func Init(cfg entity.Server) *gin.Engine {
 	r := gin.New()
 	r.NoRoute(mid.NoRoute())
-	r.Use(mid.Cors(), mid.XSSFilter([]string{}), mid.GinLogger(), mid.GinRecovery(true))
+	r.Use(mid.Cors(), mid.XSSFilter(cfg.XssWhitelist), mid.GinLogger(), mid.GinRecovery(true))
 	UserRouter(r.Group("/user"))
 	return r
 }
