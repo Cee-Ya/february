@@ -12,26 +12,26 @@ import (
 func GetUser(ctx *gin.Context) {
 	id, err := tools.Str2Uint64(ctx.Query("id"))
 	render.Result(ctx).
-		Dangers(err).
-		DangersRender(service.NewUserService(ctx).FindById(id))
+		Danger(err).
+		DangerRender(service.NewUserService(ctx).FindById(id))
 }
 
 func AddUser(ctx *gin.Context) {
 	var req vo.UserAddVo
 	render.Result(ctx).
-		Dangers(ctx.ShouldBindJSON(&req)).
-		Dangers(errors.Wrap(service.NewUserService(ctx).Create(req), "add user err:")).
+		Dangers(ctx.ShouldBindJSON(&req),
+			errors.Wrap(service.NewUserService(ctx).Create(req), "add user err:")).
 		Ok(nil)
 }
 
 func UpdateUser(ctx *gin.Context) {
 	var req vo.UserUpdateVo
 	render.Result(ctx).
-		Dangers(ctx.ShouldBindJSON(&req)).
-		Dangers(errors.Wrap(service.NewUserService(ctx).Update(req), "update user err:")).
+		Dangers(ctx.ShouldBindJSON(&req),
+			errors.Wrap(service.NewUserService(ctx).Update(req), "update user err:")).
 		Ok(nil)
 }
 
 func GetPageList(ctx *gin.Context) {
-	render.Result(ctx).DangersRender(service.NewUserService(ctx).PageList(GetPage(ctx)))
+	render.Result(ctx).DangerRender(service.NewUserService(ctx).PageList(GetPage(ctx)))
 }

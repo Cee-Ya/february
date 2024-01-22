@@ -78,7 +78,7 @@ func (b *BaseService[T]) ModifyByCache(entity *T, tx *gorm.DB) error {
 		b.Error(zap.Error(err))
 		return err
 	}
-	if err := b.putCacheByEntity(entity); err != nil {
+	if err := b.delCacheByEntity(entity); err != nil {
 		b.Error(zap.Error(err))
 		return err
 	}
@@ -111,11 +111,10 @@ func (b *BaseService[T]) ModifyNotNullByCache(entity *T, tx *gorm.DB) error {
 		b.Error(zap.Error(err))
 		return err
 	}
-	if err := b.putCacheByEntity(entity); err != nil {
+	if err := b.delCacheByEntity(entity); err != nil {
 		b.Error(zap.Error(err))
 		return err
 	}
-	b.Info(zap.String("message", "cache update success"))
 	return nil
 }
 
@@ -144,7 +143,7 @@ func (b *BaseService[T]) ModifyAttrByCache(id uint64, attrs map[string]interface
 		b.Error(zap.Error(err))
 		return err
 	}
-	if err := b.putCache(id); err != nil {
+	if err := b.delCache(id); err != nil {
 		b.Error(zap.Error(err))
 		return err
 	}
@@ -327,42 +326,6 @@ func (b *BaseService[T]) initCache(key any, t *T) (err error) {
 		return
 	}
 	if err = b.setCache(key, t); err != nil {
-		return
-	}
-	return
-}
-
-func (b *BaseService[T]) putCache(key any) (err error) {
-	var t *T
-	if t, err = b.FindByIdBase(key.(uint64)); err != nil {
-		return
-	}
-	if err = b.setCache(key, t); err != nil {
-		return
-	}
-	return
-}
-
-func (b *BaseService[T]) putCacheByEntity(t *T) (err error) {
-	if err = b.cacheCheck(); err != nil {
-		if err.Error() == "redis not enable" {
-			err = nil
-		} else {
-			return
-		}
-	}
-	// 通过反射获取id
-	var id uint64
-	var tempKey interface{}
-	if tempKey, err = tools.GetStructField(*t, "ID"); err != nil {
-		b.Error(zap.Error(err))
-		return
-	}
-	if id, err = tools.Any2Uint64(tempKey); err != nil {
-		b.Error(zap.Error(err))
-		return
-	}
-	if err = b.putCache(id); err != nil {
 		return
 	}
 	return

@@ -27,27 +27,49 @@ func Result(ctx *gin.Context) *Response {
 	}
 }
 
-// DangersRender 用于处理错误
-func (r *Response) DangersRender(res any, err error) {
+func (r *Response) Next() *Response {
+	r.Code = 0
+	r.Message = ""
+	r.Data = nil
+	return r
+}
+
+// DangerRender 用于处理错误
+func (r *Response) DangerRender(res any, err error) {
 	if r.Code > 0 {
 		return
 	}
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
-		logx.ErrorF(ctx, "DangersRender:: ", zap.Error(err))
+		logx.ErrorF(ctx, "DangerRender:: ", zap.Error(err))
 		r.Error(err)
 	}
 	r.Ok(res)
 }
 
-// Dangers 用于处理错误
-func (r *Response) Dangers(err error) *Response {
+// Dangers 用于处理多个错误
+func (r *Response) Dangers(err ...error) *Response {
+	if r.Code > 0 {
+		return r
+	}
+	for _, e := range err {
+		if e != nil {
+			ctx := common.GetTraceCtx(r.Ctx)
+			logx.ErrorF(ctx, "Danger:: ", zap.Error(e))
+			r.Error(e)
+		}
+	}
+	return r
+}
+
+// Danger 用于处理单个错误
+func (r *Response) Danger(err error) *Response {
 	if r.Code > 0 {
 		return r
 	}
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
-		logx.ErrorF(ctx, "Dangers:: ", zap.Error(err))
+		logx.ErrorF(ctx, "Danger:: ", zap.Error(err))
 		r.Error(err)
 	}
 	return r
@@ -73,12 +95,12 @@ func (r *Response) Error(err error) {
 	r.Ctx.Abort()
 }
 
-func (r *Response) Fail(message string) {
+func (r *Response) Fail(err error) {
 	if r.Code > 0 {
 		return
 	}
 	r.Code = consts.Failed
-	r.Message = message
+	r.Message = err.Error()
 	r.render()
 	// 终止
 	r.Ctx.Abort()

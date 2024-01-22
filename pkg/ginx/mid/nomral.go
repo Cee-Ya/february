@@ -178,7 +178,7 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 						zap.String("request", string(httpRequest)),
 					)
 				}
-				render.Result(c).Error(err.(error))
+				render.Result(c).Fail(err.(error))
 				c.Abort()
 			}
 		}()
