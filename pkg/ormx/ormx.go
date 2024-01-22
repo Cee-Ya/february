@@ -4,6 +4,7 @@ import (
 	"context"
 	"february/common"
 	"february/pkg/logx"
+	"fmt"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
@@ -12,23 +13,23 @@ import (
 	"time"
 )
 
-func Init() error {
+func Init() (func(), error) {
 	c := common.GlobalConfig.DB
 	db, err := gorm.Open(mysql.Open(c.Dsn), &gorm.Config{Logger: NewGormLogger()})
 	if err != nil {
-		return errors.Wrap(err, "failed to connect database")
+		return nil, errors.Wrap(err, "failed to connect database")
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		return errors.Wrap(err, "faild to open db")
+		return nil, errors.Wrap(err, "faild to open db")
 	}
 
 	sqlDB.SetMaxIdleConns(c.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(c.MaxOpenConns)
 	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
 	common.Ormx = db
-	return nil
+	return Close, nil
 }
 
 type GormLogger struct {
@@ -83,4 +84,16 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
 		)
 	}
+}
+
+func Close() {
+	sqlDB, err := common.Ormx.DB()
+	if err != nil {
+		panic(err)
+	}
+	err = sqlDB.Close()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("database closed")
 }

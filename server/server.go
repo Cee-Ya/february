@@ -21,12 +21,13 @@ func Initialize(path, configName string) (func(), error) {
 	logx.Init()
 
 	// init database
-	if err := ormx.Init(); err != nil {
+	dbClean, err := ormx.Init()
+	if err != nil {
 		return nil, err
 	}
 
 	// init redis
-	if err := redisx.InitRedis(common.GlobalConfig.Redis); err != nil {
+	if err = redisx.InitRedis(common.GlobalConfig.Redis); err != nil {
 		return nil, err
 	}
 
@@ -36,6 +37,7 @@ func Initialize(path, configName string) (func(), error) {
 
 	// release all the resources
 	return func() {
+		dbClean()
 		httpClean()
 	}, nil
 }
