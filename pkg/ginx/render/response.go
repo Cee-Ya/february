@@ -98,7 +98,7 @@ func (r *Response) toString() string {
 	if err != nil {
 		logx.ErrorF(r.Ctx, "response to json err:: ", zap.Error(err))
 		r.Error(err)
-		return r.toString()
+		return ""
 	}
 	return data
 }
