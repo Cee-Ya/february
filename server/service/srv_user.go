@@ -1,13 +1,13 @@
 package service
 
 import (
-	"errors"
 	"february/common"
 	"february/common/tools"
 	"february/entity"
 	"february/server/vo"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -26,14 +26,13 @@ func (u *UserService) PageList(page *entity.Page) (*entity.PageResult[vo.UserPag
 		where.Order("id desc")
 	}, page)
 	if err != nil {
-		u.Error(zap.Error(err))
 		return nil, err
 	}
 	var res = make([]vo.UserPageVo, 0)
 	for _, v := range temp.Rows {
 		var userPageVo vo.UserPageVo
 		if err = copier.Copy(&userPageVo, &v); err != nil {
-			u.Error(zap.Error(err))
+			u.Error(zap.Error(errors.Wrap(err, "copy err:")))
 			return nil, err
 		}
 		userPageVo.CreateTime = v.CreateTime.ToString()
@@ -51,7 +50,6 @@ func (u *UserService) Create(add vo.UserAddVo) error {
 	if temp, err = u.FindOne(func(where *gorm.DB) {
 		where.Where("username = ?", add.Username)
 	}); err != nil {
-		u.Error(zap.Error(err))
 		return err
 	}
 	if temp.ID > 0 {
@@ -62,7 +60,7 @@ func (u *UserService) Create(add vo.UserAddVo) error {
 		var pass string
 		pass, err = tools.HashPassword(add.Password)
 		if err != nil {
-			u.Error(zap.Error(err))
+			u.Error(zap.Error(errors.Wrap(err, "hash password err:")))
 			return err
 		}
 		user := entity.User{
@@ -72,7 +70,6 @@ func (u *UserService) Create(add vo.UserAddVo) error {
 			Backup:   add.Backup,
 		}
 		if err = u.Insert(user, tx); err != nil {
-			u.Error(zap.Error(err))
 			return err
 		}
 		return nil
@@ -92,19 +89,18 @@ func (u *UserService) Update(update vo.UserUpdateVo) error {
 		}
 		var temp entity.User
 		if err = copier.Copy(&temp, &update); err != nil {
-			u.Error(zap.Error(err))
+			u.Error(zap.Error(errors.Wrap(err, "copy err:")))
 			return err
 		}
 		if update.Password != "" {
 			var pass string
 			if pass, err = tools.HashPassword(update.Password); err != nil {
-				u.Error(zap.Error(err))
+				u.Error(zap.Error(errors.Wrap(err, "hash password err:")))
 				return err
 			}
 			temp.Password = pass
 		}
 		if err = u.ModifyNotNull(&temp, tx); err != nil {
-			u.Error(zap.Error(err))
 			return err
 		}
 		return nil
