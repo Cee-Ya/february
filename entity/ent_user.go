@@ -18,7 +18,7 @@ func (User) TableName() string {
 	return "t_sys_user"
 }
 
-func (User) EnableRedis() bool {
+func (User) EnableCache() bool {
 	return true
 }
 

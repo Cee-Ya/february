@@ -16,7 +16,7 @@ var errStr = "BaseService err:: "
 
 // BaseServiceInterface todo 需要优化缓存，把缓存的东西分离出去，做到职责单一
 type BaseServiceInterface interface {
-	EnableRedis() bool //是否开启缓存
+	EnableCache() bool //是否开启缓存
 	CacheKey() string  //缓存key
 	TableName() string //表名 //缓存key
 }
@@ -36,7 +36,7 @@ func NewService[T any](ctx context.Context, entity BaseServiceInterface) *BaseSe
 		ctx:                  ctx,
 		BaseServiceInterface: entity,
 		orm:                  common.Ormx.WithContext(ctx),
-		LogWrapper:           logx.NewLogWrapper(common.Logger, ctx, "BaseService"),
+		LogWrapper:           logx.NewLogWrapper(common.Logger, ctx, "BaseService:: "),
 	}
 }
 
@@ -55,11 +55,10 @@ func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 // Modify  更新
 // entity中的所有字段都会更新，所以如果需要修改某个字段，需要先查询出来，再修改
 func (b *BaseService[T]) Modify(entity *T, tx *gorm.DB) error {
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.ModifyByCache(entity, tx)
-	} else {
-		return b.ModifyBase(entity, tx)
 	}
+	return b.ModifyBase(entity, tx)
 }
 
 func (b *BaseService[T]) ModifyBase(entity *T, tx *gorm.DB) error {
@@ -88,11 +87,10 @@ func (b *BaseService[T]) ModifyByCache(entity *T, tx *gorm.DB) error {
 // ModifyNotNull 更新
 // entity中的所有字段都会更新，所以如果需要修改某个字段，需要先查询出来，再修改
 func (b *BaseService[T]) ModifyNotNull(entity *T, tx *gorm.DB) error {
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.ModifyNotNullByCache(entity, tx)
-	} else {
-		return b.ModifyNotNullBase(entity, tx)
 	}
+	return b.ModifyNotNullBase(entity, tx)
 }
 
 func (b *BaseService[T]) ModifyNotNullBase(entity *T, tx *gorm.DB) error {
@@ -120,11 +118,10 @@ func (b *BaseService[T]) ModifyNotNullByCache(entity *T, tx *gorm.DB) error {
 
 // ModifyAttr 更新
 func (b *BaseService[T]) ModifyAttr(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.ModifyAttrByCache(id, attrs, tx)
-	} else {
-		return b.ModifyAttrBase(id, attrs, tx)
 	}
+	return b.ModifyAttrBase(id, attrs, tx)
 }
 
 func (b *BaseService[T]) ModifyAttrBase(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
@@ -152,11 +149,10 @@ func (b *BaseService[T]) ModifyAttrByCache(id uint64, attrs map[string]interface
 
 // DeleteById 根据id删除
 func (b *BaseService[T]) DeleteById(id uint64, tx *gorm.DB) error {
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.DeleteByIdAndCache(id, tx)
-	} else {
-		return b.DeleteByIdBase(id, tx)
 	}
+	return b.DeleteByIdBase(id, tx)
 }
 
 func (b *BaseService[T]) DeleteByIdBase(id uint64, tx *gorm.DB) error {
@@ -184,11 +180,10 @@ func (b *BaseService[T]) DeleteByIdAndCache(id uint64, tx *gorm.DB) error {
 
 // Delete 删除
 func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.DeleteByCache(entity, tx)
-	} else {
-		return b.DeleteBase(entity, tx)
 	}
+	return b.DeleteBase(entity, tx)
 }
 
 func (b *BaseService[T]) DeleteBase(entity T, tx *gorm.DB) error {
@@ -219,11 +214,10 @@ func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
 	if id == 0 {
 		return nil, errors.New("id is zero")
 	}
-	if b.EnableRedis() {
+	if b.EnableCache() {
 		return b.FindByIdCache(id)
-	} else {
-		return b.FindByIdBase(id)
 	}
+	return b.FindByIdBase(id)
 }
 
 func (b *BaseService[T]) FindByIdBase(id uint64) (t *T, err error) {
@@ -301,8 +295,8 @@ func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *enti
 // ################################################ 缓存部分  ###################################################
 // ############################################################################################################
 func (b *BaseService[T]) cacheCheck() (err error) {
-	if !b.EnableRedis() {
-		return errors.New("redis not enable")
+	if !b.EnableCache() {
+		return errors.New("cache not enable")
 	}
 	if b.CacheKey() == "" {
 		b.Error(zap.Error(errors.New(errStr + "CacheKey is empty")))
@@ -314,7 +308,7 @@ func (b *BaseService[T]) cacheCheck() (err error) {
 
 func (b *BaseService[T]) initCache(key any, t *T) (err error) {
 	if err = b.cacheCheck(); err != nil {
-		if err.Error() == "redis not enable" {
+		if err.Error() == "cache not enable" {
 			err = nil
 		} else {
 			return
@@ -333,7 +327,7 @@ func (b *BaseService[T]) initCache(key any, t *T) (err error) {
 
 func (b *BaseService[T]) delCacheByEntity(t *T) (err error) {
 	if err = b.cacheCheck(); err != nil {
-		if err.Error() == "redis not enable" {
+		if err.Error() == "cache not enable" {
 			err = nil
 		} else {
 			return
@@ -379,7 +373,7 @@ func (b *BaseService[T]) setCache(key any, t *T) (err error) {
 
 func (b *BaseService[T]) getCacheByCheck(key any) (t *T, err error) {
 	if err = b.cacheCheck(); err != nil {
-		if err.Error() == "redis not enable" {
+		if err.Error() == "cache not enable" {
 			err = nil
 		} else {
 			return
@@ -410,7 +404,7 @@ func (b *BaseService[T]) getCache(key any) (t *T, err error) {
 
 func (b *BaseService[T]) delCache(key any) (err error) {
 	if err = b.cacheCheck(); err != nil {
-		if err.Error() == "redis not enable" {
+		if err.Error() == "cache not enable" {
 			err = nil
 		} else {
 			return
