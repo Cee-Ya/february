@@ -9,7 +9,7 @@ import (
 func Init() *gin.Engine {
 	r := gin.New()
 	r.NoRoute(mid.NoRoute())
-	r.Use(mid.Cors(), mid.GinLogger(), mid.GinRecovery(true))
+	r.Use(mid.Cors(), mid.XSSFilter([]string{}), mid.GinLogger(), mid.GinRecovery(true))
 	UserRouter(r.Group("/user"))
 	return r
 }
