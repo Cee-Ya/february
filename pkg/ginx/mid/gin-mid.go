@@ -46,12 +46,33 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
+// 自定义 ResponseWriter
+type noLoggingResponseWriter struct {
+	gin.ResponseWriter
+	bodyBuffer *bytes.Buffer
+}
+
+func (w *noLoggingResponseWriter) Write(data []byte) (int, error) {
+	// 将响应写入缓冲区
+	w.bodyBuffer.Write(data)
+	// 调用原始 ResponseWriter 的 Write 方法
+	return w.ResponseWriter.Write(data)
+}
+
+func (w *noLoggingResponseWriter) isStream() bool {
+	// 判断响应体是否是流
+	// 这里可以根据实际情况来判断，例如判断 Content-Type 是否为流媒体类型
+	// 这里简单示范了通过缓冲区大小来判断是否是流
+	return w.bodyBuffer.Len() > 1024 // 通过缓冲区大小来判断是否是流
+}
+
 // GinLogger 接收gin框架默认的日志
 func GinLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		uuidStr := strings.ReplaceAll(uuid.New().String(), "-", "")
 		path := c.Request.URL.Path
+		contentType := c.GetHeader("Content-Type")
 		userId := 0
 		ctx := context.WithValue(context.Background(), consts.TraceKey, &entity.Trace{TraceId: uuidStr, UserId: userId})
 		var (
@@ -72,6 +93,10 @@ func GinLogger() gin.HandlerFunc {
 		// 提前注入traceId
 		//common.Ormx = common.Ormx.WithContext(ctx)
 		c.Set(consts.TraceCtx, ctx)
+		// 使用自定义 ResponseWriter
+		writer := &noLoggingResponseWriter{c.Writer, bytes.NewBuffer(nil)}
+		// 替换 gin 的 Writer
+		c.Writer = writer
 		c.Next()
 		cost := time.Since(start)
 		zapFields := make([]zap.Field, 0)
@@ -83,10 +108,17 @@ func GinLogger() gin.HandlerFunc {
 		// 只有在以下请求方法中才打印body
 		switch c.Request.Method {
 		case http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
-			zapFields = append(zapFields, zap.String("body", string(dataByte)))
+			// 如果是文件上传，不打印body
+			if contentType != "multipart/form-data" {
+				zapFields = append(zapFields, zap.String("body", string(dataByte)))
+			}
 		}
 		if result, ok := c.Get(consts.ResponseData); ok {
-			zapFields = append(zapFields, zap.String("result", result.(string)))
+			// 检查是否是流，如果是则进行相应的处理
+			if !writer.isStream() {
+				// 在这里进行流相关的处理，不记录返回值日志
+				zapFields = append(zapFields, zap.String("result", result.(string)))
+			}
 		}
 		zapFields = append(zapFields, zap.String("userAgent", c.Request.UserAgent()))
 		zapFields = append(zapFields, zap.Duration("cost", cost))
