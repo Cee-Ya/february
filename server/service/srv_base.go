@@ -18,7 +18,7 @@ var errStr = "BaseService err:: "
 type BaseServiceInterface interface {
 	EnableCache() bool //是否开启缓存
 	CacheKey() string  //缓存key
-	TableName() string //表名 //缓存key
+	TableName() string //表名
 }
 
 // BaseService 基础服务
