@@ -55,7 +55,7 @@ func (r *Response) Dangers(err ...error) *Response {
 	for _, e := range err {
 		if e != nil {
 			ctx := common.GetTraceCtx(r.Ctx)
-			logx.ErrorF(ctx, "Danger:: ", zap.Error(e))
+			logx.ErrorF(ctx, "Dangers:: ", zap.Error(e))
 			r.Error(e)
 		}
 	}
