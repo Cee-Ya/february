@@ -75,10 +75,10 @@ func GinLogger() gin.HandlerFunc {
 		c.Next()
 		cost := time.Since(start)
 		zapFields := make([]zap.Field, 0)
-		zapFields = append(zapFields, zap.Int("Status", c.Writer.Status()))
-		zapFields = append(zapFields, zap.String("Method", c.Request.Method))
-		zapFields = append(zapFields, zap.String("IP", c.ClientIP()))
-		zapFields = append(zapFields, zap.String("Path", path))
+		zapFields = append(zapFields, zap.Int("status", c.Writer.Status()))
+		zapFields = append(zapFields, zap.String("method", c.Request.Method))
+		zapFields = append(zapFields, zap.String("ip", c.ClientIP()))
+		zapFields = append(zapFields, zap.String("path", path))
 		zapFields = append(zapFields, zap.String("query", c.Request.URL.RawQuery))
 		// 只有在以下请求方法中才打印body
 		switch c.Request.Method {
@@ -88,8 +88,8 @@ func GinLogger() gin.HandlerFunc {
 		if result, ok := c.Get(consts.ResponseData); ok {
 			zapFields = append(zapFields, zap.String("result", result.(string)))
 		}
-		zapFields = append(zapFields, zap.String("UserAgent", c.Request.UserAgent()))
-		zapFields = append(zapFields, zap.Duration("Cost", cost))
+		zapFields = append(zapFields, zap.String("userAgent", c.Request.UserAgent()))
+		zapFields = append(zapFields, zap.Duration("cost", cost))
 		logx.InfoF(ctx, "REST:: ", zapFields...)
 	}
 }
