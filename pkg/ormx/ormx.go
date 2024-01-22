@@ -14,15 +14,9 @@ import (
 
 func Init() error {
 	c := common.GlobalConfig.DB
-	db, err := gorm.Open(mysql.Open(c.Dsn), &gorm.Config{
-		Logger: NewGormLogger(),
-	})
+	db, err := gorm.Open(mysql.Open(c.Dsn), &gorm.Config{Logger: NewGormLogger()})
 	if err != nil {
 		return errors.Wrap(err, "failed to connect database")
-	}
-
-	if c.Debug {
-		db = db.Debug()
 	}
 
 	sqlDB, err := db.DB()
@@ -72,7 +66,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.Int64("rows", rows),
 			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
 		)
-	case elapsed > 100*time.Millisecond && l.ZapLogger.Core().Enabled(zap.WarnLevel):
+	case elapsed > 100*time.Millisecond && l.ZapLogger.Core().Enabled(zap.WarnLevel) && common.GlobalConfig.DB.EnableLog:
 		sql, rows := fc()
 		logx.WarnF(ctx, "SQL-SLOW::",
 			zap.Error(err),
@@ -80,7 +74,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 			zap.Int64("rows", rows),
 			zap.Float64("elapsed", float64(elapsed.Nanoseconds())/1e6),
 		)
-	case l.ZapLogger.Core().Enabled(zap.DebugLevel):
+	case l.ZapLogger.Core().Enabled(zap.DebugLevel) && common.GlobalConfig.DB.EnableLog:
 		sql, rows := fc()
 		logx.DebugF(ctx, "SQL::",
 			zap.Error(err),

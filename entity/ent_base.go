@@ -91,7 +91,7 @@ type Server struct {
 // DB 数据库配置
 type DB struct {
 	Dsn          string // 连接信息
-	Debug        bool   // 是否开启调试模式
+	EnableLog    bool   // 是否开启日志
 	MaxLifetime  int    // 最大连接周期，超过时间的连接就close
 	MaxOpenConns int    // 设置最大连接数
 	MaxIdleConns int    // 设置闲置连接数

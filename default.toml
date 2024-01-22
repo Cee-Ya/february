@@ -7,11 +7,11 @@ Port = 2323
 ShutdownTimeout = 30
 # max content length: 64M
 MaxContentLength = 67108864
-# http httpx read timeout, unit: s
+# http read timeout, unit: s
 ReadTimeout = 20
-# http httpx write timeout, unit: s
+# http write timeout, unit: s
 WriteTimeout = 40
-# http httpx idle timeout, unit: s
+# http idle timeout, unit: s
 IdleTimeout = 120
 # xss whitelist
 XssWhitelist = []
@@ -30,8 +30,8 @@ Format = "txt"
 
 [DB]
 DSN = "root:uMIekWqK1P7lTIld@tcp(192.168.13.231:3306)/december?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true"
-# enable debug mode or not
-Debug = true
+# enable log
+EnableLog = true
 # unit: s
 MaxLifetime = 7200
 # max open connections
@@ -42,12 +42,14 @@ MaxIdleConns = 50
 TablePrefix = ""
 
 [Redis]
-DB = 0
+DB = 5
 # address, ip:port or ip1:port,ip2:port for cluster and sentinel(SentinelAddrs)
 # Addr = "192.168.22.129:6379"
 Addr = "192.168.13.231:6379"
+#Addr = "127.0.0.1:6379"
 #Username = ""
 Password = "szpLAavdWPT7w7HB"
+#Password = "111111"
 # UseTLS = false
 # TLSMinVersion = "1.2"
 # standalone cluster sentinel

@@ -37,10 +37,10 @@ func Init() {
 	//	return lev >= zap.ErrorLevel
 	//})
 	cores := [...]zapcore.Core{
-		//getEncoderCore(fmt.Sprintf("./%s/debug.logx", common.GlobalConfig.Log.Director), debugPriority),
-		getEncoderCore(fmt.Sprintf("./%s/logx.logx", common.GlobalConfig.Log.Director), infoPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/warn.logx", common.GlobalConfig.Log.Director), warnPriority),
-		//getEncoderCore(fmt.Sprintf("./%s/error.logx", common.GlobalConfig.Log.Director), errorPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/debug.log", common.GlobalConfig.Log.Director), debugPriority),
+		getEncoderCore(fmt.Sprintf("./%s/log.log", common.GlobalConfig.Log.Director), infoPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/warn.log", common.GlobalConfig.Log.Director), warnPriority),
+		//getEncoderCore(fmt.Sprintf("./%s/error.log", common.GlobalConfig.Log.Director), errorPriority),
 	}
 	logger := zap.New(zapcore.NewTee(cores[:]...), zap.AddCaller(), zap.AddCallerSkip(1))
 	common.Logger = logger
