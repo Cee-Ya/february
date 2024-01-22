@@ -1,7 +1,6 @@
 package router
 
 import (
-	"february/common"
 	"february/common/tools"
 	"february/pkg/ginx/render"
 	"february/server/service"
@@ -11,18 +10,17 @@ import (
 )
 
 func GetUser(ctx *gin.Context) {
-	idStr := ctx.Query("id")
-	id, err := tools.Str2Uint64(idStr)
+	id, err := tools.Str2Uint64(ctx.Query("id"))
 	render.Result(ctx).
 		Dangers(err).
-		DangersRender(service.NewUserService(common.GetTraceCtx(ctx)).FindById(id))
+		DangersRender(service.NewUserService(ctx).FindById(id))
 }
 
 func AddUser(ctx *gin.Context) {
 	var req vo.UserAddVo
 	render.Result(ctx).
 		Dangers(ctx.ShouldBindJSON(&req)).
-		Dangers(errors.Wrap(service.NewUserService(common.GetTraceCtx(ctx)).Create(req), "add user err:")).
+		Dangers(errors.Wrap(service.NewUserService(ctx).Create(req), "add user err:")).
 		Ok(nil)
 }
 
@@ -30,10 +28,10 @@ func UpdateUser(ctx *gin.Context) {
 	var req vo.UserUpdateVo
 	render.Result(ctx).
 		Dangers(ctx.ShouldBindJSON(&req)).
-		Dangers(errors.Wrap(service.NewUserService(common.GetTraceCtx(ctx)).Update(req), "update user err:")).
+		Dangers(errors.Wrap(service.NewUserService(ctx).Update(req), "update user err:")).
 		Ok(nil)
 }
 
 func GetPageList(ctx *gin.Context) {
-	render.Result(ctx).DangersRender(service.NewUserService(common.GetTraceCtx(ctx)).PageList(GetPage(ctx)))
+	render.Result(ctx).DangersRender(service.NewUserService(ctx).PageList(GetPage(ctx)))
 }

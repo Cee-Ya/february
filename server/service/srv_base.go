@@ -14,10 +14,11 @@ import (
 
 var errStr = "BaseService err:: "
 
+// BaseServiceInterface todo 需要优化缓存，把缓存的东西分离出去，做到职责单一
 type BaseServiceInterface interface {
-	TableName() string //表名
 	EnableRedis() bool //是否开启缓存
 	CacheKey() string  //缓存key
+	TableName() string //表名 //缓存key
 }
 
 // BaseService 基础服务
@@ -26,19 +27,26 @@ type BaseServiceInterface interface {
 type BaseService[T any] struct {
 	BaseServiceInterface
 	ctx context.Context
+	orm *gorm.DB
+	*logx.LogWrapper
 }
 
 func NewService[T any](ctx context.Context, entity BaseServiceInterface) *BaseService[T] {
-	return &BaseService[T]{ctx: ctx, BaseServiceInterface: entity}
+	return &BaseService[T]{
+		ctx:                  ctx,
+		BaseServiceInterface: entity,
+		orm:                  common.Ormx.WithContext(ctx),
+		LogWrapper:           logx.NewLogWrapper(common.Logger, ctx, "BaseService"),
+	}
 }
 
 // Insert 插入
 func (b *BaseService[T]) Insert(entity T, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Create(&entity).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"insert err:: ", zap.Error(err))
+	if err := tx.Create(&entity).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -56,10 +64,10 @@ func (b *BaseService[T]) Modify(entity *T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) ModifyBase(entity *T, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Save(entity).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"update not null err:: ", zap.Error(err))
+	if err := tx.Save(entity).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -67,11 +75,11 @@ func (b *BaseService[T]) ModifyBase(entity *T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) ModifyByCache(entity *T, tx *gorm.DB) error {
 	if err := b.ModifyBase(entity, tx); err != nil {
-		logx.ErrorF(b.ctx, errStr+"ModifyBase err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	if err := b.putCacheByEntity(entity); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -89,10 +97,10 @@ func (b *BaseService[T]) ModifyNotNull(entity *T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) ModifyNotNullBase(entity *T, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Updates(entity).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"update not null err:: ", zap.Error(err))
+	if err := tx.Updates(entity).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -100,13 +108,14 @@ func (b *BaseService[T]) ModifyNotNullBase(entity *T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) ModifyNotNullByCache(entity *T, tx *gorm.DB) error {
 	if err := b.ModifyNotNullBase(entity, tx); err != nil {
-		logx.ErrorF(b.ctx, errStr+"ModifyNotNullBase err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	if err := b.putCacheByEntity(entity); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
+	b.Info(zap.String("message", "cache update success"))
 	return nil
 }
 
@@ -121,10 +130,10 @@ func (b *BaseService[T]) ModifyAttr(id uint64, attrs map[string]interface{}, tx 
 
 func (b *BaseService[T]) ModifyAttrBase(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Table(b.TableName()).Where("id = ?", id).Updates(attrs).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"update err:: ", zap.Error(err))
+	if err := tx.Table(b.TableName()).Where("id = ?", id).Updates(attrs).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -132,11 +141,11 @@ func (b *BaseService[T]) ModifyAttrBase(id uint64, attrs map[string]interface{},
 
 func (b *BaseService[T]) ModifyAttrByCache(id uint64, attrs map[string]interface{}, tx *gorm.DB) error {
 	if err := b.ModifyAttrBase(id, attrs, tx); err != nil {
-		logx.ErrorF(b.ctx, errStr+"ModifyAttrBase err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	if err := b.putCache(id); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -153,10 +162,10 @@ func (b *BaseService[T]) DeleteById(id uint64, tx *gorm.DB) error {
 
 func (b *BaseService[T]) DeleteByIdBase(id uint64, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Where("id = ?", id).Delete(b.TableName()).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"delete by id err:: ", zap.Error(err))
+	if err := tx.Where("id = ?", id).Delete(b.TableName()).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -164,11 +173,11 @@ func (b *BaseService[T]) DeleteByIdBase(id uint64, tx *gorm.DB) error {
 
 func (b *BaseService[T]) DeleteByIdAndCache(id uint64, tx *gorm.DB) error {
 	if err := b.DeleteByIdBase(id, tx); err != nil {
-		logx.ErrorF(b.ctx, errStr+"DeleteByIdBase err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	if err := b.delCache(id); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -185,10 +194,10 @@ func (b *BaseService[T]) Delete(entity T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) DeleteBase(entity T, tx *gorm.DB) error {
 	if tx == nil {
-		tx = common.Ormx
+		tx = b.orm
 	}
-	if err := tx.WithContext(b.ctx).Delete(entity).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"delete err: %v", zap.Error(err))
+	if err := tx.Delete(entity).Error; err != nil {
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -196,11 +205,11 @@ func (b *BaseService[T]) DeleteBase(entity T, tx *gorm.DB) error {
 
 func (b *BaseService[T]) DeleteByCache(entity T, tx *gorm.DB) error {
 	if err := b.DeleteBase(entity, tx); err != nil {
-		logx.ErrorF(b.ctx, errStr+"DeleteBase err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	if err := b.delCacheByEntity(&entity); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return err
 	}
 	return nil
@@ -219,8 +228,8 @@ func (b *BaseService[T]) FindById(id uint64) (t *T, err error) {
 }
 
 func (b *BaseService[T]) FindByIdBase(id uint64) (t *T, err error) {
-	if err = common.Ormx.WithContext(b.ctx).Where("id = ?", id).Take(&t).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"find by id err:: ", zap.Error(err))
+	if err = b.orm.Where("id = ?", id).Take(&t).Error; err != nil {
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -244,12 +253,12 @@ func (b *BaseService[T]) FindByIdCache(id uint64) (t *T, err error) {
 
 // FindOne 查询单个
 func (b *BaseService[T]) FindOne(condition func(where *gorm.DB)) (t *T, err error) {
-	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
+	db := b.orm.Table(b.TableName())
 	if condition != nil {
 		condition(db)
 	}
 	if err = db.Limit(1).Find(&t).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"find one err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -257,12 +266,12 @@ func (b *BaseService[T]) FindOne(condition func(where *gorm.DB)) (t *T, err erro
 
 // FindList 查询列表
 func (b *BaseService[T]) FindList(condition func(where *gorm.DB)) (ts []T, err error) {
-	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
+	db := b.orm.Table(b.TableName())
 	if condition != nil {
 		condition(db)
 	}
 	if err = db.Find(&ts).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"find list err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -271,7 +280,7 @@ func (b *BaseService[T]) FindList(condition func(where *gorm.DB)) (ts []T, err e
 // FindPageList 分页查询
 func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *entity.Page) (res *entity.PageResult[T], err error) {
 	res = &entity.PageResult[T]{}
-	db := common.Ormx.WithContext(b.ctx).Table(b.TableName())
+	db := b.orm.Table(b.TableName())
 	if condition != nil {
 		condition(db)
 	} else {
@@ -279,11 +288,11 @@ func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *enti
 		db.Order("id desc")
 	}
 	if err = db.Count(&res.Total).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"find page count err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if err = db.Offset((page.PageNo - 1) * page.PageSize).Limit(page.PageSize).Find(&res.Rows).Error; err != nil {
-		logx.ErrorF(b.ctx, errStr+"find page list err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -297,7 +306,7 @@ func (b *BaseService[T]) cacheCheck() (err error) {
 		return errors.New("redis not enable")
 	}
 	if b.CacheKey() == "" {
-		logx.ErrorF(b.ctx, errStr+"CacheKey is empty")
+		b.Error(zap.Error(errors.New(errStr + "CacheKey is empty")))
 		return
 	}
 	return
@@ -346,11 +355,11 @@ func (b *BaseService[T]) putCacheByEntity(t *T) (err error) {
 	var id uint64
 	var tempKey interface{}
 	if tempKey, err = tools.GetStructField(*t, "ID"); err != nil {
-		logx.ErrorF(b.ctx, errStr+"putCacheByEntity GetStructField err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if id, err = tools.Any2Uint64(tempKey); err != nil {
-		logx.ErrorF(b.ctx, errStr+"putCacheByEntity Any2Uint64 err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if err = b.putCache(id); err != nil {
@@ -371,15 +380,15 @@ func (b *BaseService[T]) delCacheByEntity(t *T) (err error) {
 	var id uint64
 	var tempKey interface{}
 	if tempKey, err = tools.GetStructField(*t, "ID"); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCacheByEntity GetStructField err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if id, err = tools.Any2Uint64(tempKey); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCacheByEntity Any2Uint64 err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if err = b.delCache(id); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCacheByEntity err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -390,16 +399,16 @@ func (b *BaseService[T]) setCache(key any, t *T) (err error) {
 	var str string
 	str, err = tools.ToJson(t)
 	if err != nil {
-		logx.ErrorF(b.ctx, errStr+"setCache ToJson err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	var myKey string
 	if myKey, err = tools.ToString(key); err != nil {
-		logx.ErrorF(b.ctx, errStr+"setCache ToString err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if err = utils.NewRedisUtils(b.ctx).MustSet(b.CacheKey()+myKey, str); err != nil {
-		logx.ErrorF(b.ctx, errStr+"setCache MustSet err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -422,7 +431,7 @@ func (b *BaseService[T]) getCacheByCheck(key any) (t *T, err error) {
 func (b *BaseService[T]) getCache(key any) (t *T, err error) {
 	var myKey string
 	if myKey, err = tools.ToString(key); err != nil {
-		logx.ErrorF(b.ctx, errStr+"getCache ToString err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	var str string
@@ -430,7 +439,7 @@ func (b *BaseService[T]) getCache(key any) (t *T, err error) {
 		return
 	}
 	if err = tools.Str2Struct(str, &t); err != nil {
-		logx.ErrorF(b.ctx, errStr+"getCache ToStruct err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return
@@ -446,11 +455,11 @@ func (b *BaseService[T]) delCache(key any) (err error) {
 	}
 	var myKey string
 	if myKey, err = tools.ToString(key); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache ToString err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	if err = utils.NewRedisUtils(b.ctx).MustDel(b.CacheKey() + myKey); err != nil {
-		logx.ErrorF(b.ctx, errStr+"delCache MustDel err:: ", zap.Error(err))
+		b.Error(zap.Error(err))
 		return
 	}
 	return

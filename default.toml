@@ -54,4 +54,5 @@ RedisType = "standalone"
 # MasterName = "mymaster"
 # SentinelUsername = ""
 # SentinelPassword = ""
-KeyExpire = 86400
+# key expire unit: s
+KeyExpire = 7200

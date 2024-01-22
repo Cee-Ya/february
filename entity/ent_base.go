@@ -113,9 +113,9 @@ type RedisConfig struct {
 
 // BaseEntity 基础业务实体
 type BaseEntity struct {
-	ID         uint64                 `gorm:"id"`
-	CreateTime *LocalTime             `gorm:"create_time"`
-	ModifyTime *LocalTime             `gorm:"modify_time"`
+	ID         uint64                 `gorm:"id" json:"id"`
+	CreateTime *LocalTime             `gorm:"create_time" json:"createTime"`
+	ModifyTime *LocalTime             `gorm:"modify_time" json:"modifyTime"`
 	Version    optimisticlock.Version `gorm:"version" json:"-"`
 }
 

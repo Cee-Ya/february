@@ -113,7 +113,14 @@ func GetWriteSyncer(file string) zapcore.WriteSyncer {
 }
 
 type LogWrapper struct {
-	logger *zap.Logger
+	baseTag string
+	logger  *zap.Logger
+	ctx     context.Context
+}
+
+func NewLogWrapper(logger *zap.Logger,
+	ctx context.Context, tagName string) *LogWrapper {
+	return &LogWrapper{logger: logger, ctx: ctx, baseTag: tagName}
 }
 
 var Log LogWrapper
@@ -121,42 +128,86 @@ var Log LogWrapper
 func Debug(tag string, fields ...zap.Field) {
 	Log.logger.Debug(tag, fields...)
 }
+
+func (l *LogWrapper) Debug(fields ...zap.Field) {
+	trace := l.ctx.Value(consts.TraceKey).(*entity.Trace)
+	Log.logger.Debug(l.baseTag,
+		append(fields, zap.String("trace_id", trace.TraceId))...,
+	)
+}
+
 func DebugF(ctx context.Context, tag string, fields ...zap.Field) {
 	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Debug(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
 }
+
+func (l *LogWrapper) Info(fields ...zap.Field) {
+	trace := l.ctx.Value(consts.TraceKey).(*entity.Trace)
+	Log.logger.Info(l.baseTag,
+		append(fields, zap.String("trace_id", trace.TraceId))...,
+	)
+}
+
 func Info(tag string, fields ...zap.Field) {
 	Log.logger.Info(tag, fields...)
 }
+
 func InfoF(ctx context.Context, tag string, fields ...zap.Field) {
 	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Info(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
 }
+
 func Warn(tag string, fields ...zap.Field) {
 	Log.logger.Warn(tag, fields...)
 }
+
+func (l *LogWrapper) Warn(fields ...zap.Field) {
+	trace := l.ctx.Value(consts.TraceKey).(*entity.Trace)
+	Log.logger.Warn(l.baseTag,
+		append(fields, zap.String("trace_id", trace.TraceId))...,
+	)
+}
+
 func WarnF(ctx context.Context, tag string, fields ...zap.Field) {
 	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Warn(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
 }
+
 func Error(tag string, fields ...zap.Field) {
 	Log.logger.Error(tag, fields...)
 }
+
+func (l *LogWrapper) Error(fields ...zap.Field) {
+	trace := l.ctx.Value(consts.TraceKey).(*entity.Trace)
+	Log.logger.Error(l.baseTag,
+		append(fields, zap.String("trace_id", trace.TraceId))...,
+	)
+}
+
 func ErrorF(ctx context.Context, tag string, fields ...zap.Field) {
 	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Error(tag,
 		append(fields, zap.String("trace_id", trace.TraceId))...,
 	)
 }
+
 func Fatal(tag string, fields ...zap.Field) {
 	Log.logger.Fatal(tag, fields...)
 }
+
+func (l *LogWrapper) Fatal(fields ...zap.Field) {
+	trace := l.ctx.Value(consts.TraceKey).(*entity.Trace)
+	Log.logger.Fatal(l.baseTag,
+		append(fields, zap.String("trace_id", trace.TraceId))...,
+	)
+}
+
 func FatalF(ctx context.Context, tag string, fields ...zap.Field) {
 	trace := ctx.Value(consts.TraceKey).(*entity.Trace)
 	Log.logger.Fatal(tag,
