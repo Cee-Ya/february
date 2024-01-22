@@ -9,4 +9,5 @@ import (
 var GlobalConfig *entity.Config
 var Logger *zap.Logger
 var Ormx *gorm.DB
-var Redisx entity.Redis
+var RedisCache entity.Redis
+var MemoryCache entity.MemoryCache

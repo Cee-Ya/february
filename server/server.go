@@ -3,11 +3,12 @@ package server
 import (
 	"february/common"
 	"february/common/consts"
+	"february/pkg/cache/memory"
+	"february/pkg/cache/redisx"
 	"february/pkg/config"
 	"february/pkg/httpx"
 	"february/pkg/logx"
 	"february/pkg/ormx"
-	"february/pkg/redis"
 	"february/server/router"
 	"strings"
 )
@@ -27,7 +28,9 @@ func Initialize(path, configName string) (func(), error) {
 	}
 
 	// init redis
-	if err = redisx.InitRedis(common.GlobalConfig.Redis); err != nil {
+	// todo 选择缓存模式
+	memory.InitMemoryCache()
+	if err = redisx.InitRedis(common.GlobalConfig.Cache); err != nil {
 		return nil, err
 	}
 

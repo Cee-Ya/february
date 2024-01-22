@@ -11,24 +11,24 @@ import (
 	"strings"
 )
 
-//var Redis interface {
-//	Exists(ctx context.Context, keys ...string) *redis.IntCmd
-//	Del(ctx context.Context, keys ...string) *redis.IntCmd
-//	Get(ctx context.Context, key string) *redis.StringCmd
-//	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-//	HGetAll(ctx context.Context, key string) *redis.MapStringStringCmd
-//	HExists(ctx context.Context, key, field string) *redis.BoolCmd
-//	HSet(ctx context.Context, key string, values ...interface{}) *redis.IntCmd
-//	HGet(ctx context.Context, key, fields string) *redis.StringCmd
-//	HDel(ctx context.Context, key string, fields ...string) *redis.IntCmd
+//var CacheConfig interface {
+//	Exists(ctx context.Context, keys ...string) *redisx.IntCmd
+//	Del(ctx context.Context, keys ...string) *redisx.IntCmd
+//	Get(ctx context.Context, key string) *redisx.StringCmd
+//	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redisx.StatusCmd
+//	HGetAll(ctx context.Context, key string) *redisx.MapStringStringCmd
+//	HExists(ctx context.Context, key, field string) *redisx.BoolCmd
+//	HSet(ctx context.Context, key string, values ...interface{}) *redisx.IntCmd
+//	HGet(ctx context.Context, key, fields string) *redisx.StringCmd
+//	HDel(ctx context.Context, key string, fields ...string) *redisx.IntCmd
 //	Close() error
-//	Ping(ctx context.Context) *redis.StatusCmd
-//	Publish(ctx context.Context, channel string, message interface{}) *redis.IntCmd
+//	Ping(ctx context.Context) *redisx.StatusCmd
+//	Publish(ctx context.Context, channel string, message interface{}) *redisx.IntCmd
 //}
 
-func InitRedis(cfg entity.RedisConfig) error {
+func InitRedis(cfg entity.CacheConfig) error {
 	var redisClient entity.Redis
-	fmt.Println("redis mode:", cfg.RedisType)
+	fmt.Println("redisx mode:", cfg.RedisType)
 	switch cfg.RedisType {
 	case "standalone", "":
 		redisOptions := &redis.Options{
@@ -41,7 +41,7 @@ func InitRedis(cfg entity.RedisConfig) error {
 		if cfg.UseTLS {
 			tlsConfig, err := cfg.TLSConfig()
 			if err != nil {
-				fmt.Println("failed to init redis tls config:", err)
+				fmt.Println("failed to init redisx tls config:", err)
 				os.Exit(1)
 			}
 			redisOptions.TLSConfig = tlsConfig
@@ -58,7 +58,7 @@ func InitRedis(cfg entity.RedisConfig) error {
 		if cfg.UseTLS {
 			tlsConfig, err := cfg.TLSConfig()
 			if err != nil {
-				fmt.Println("failed to init redis tls config:", err)
+				fmt.Println("failed to init redisx tls config:", err)
 				os.Exit(1)
 			}
 			redisOptions.TLSConfig = tlsConfig
@@ -80,7 +80,7 @@ func InitRedis(cfg entity.RedisConfig) error {
 		if cfg.UseTLS {
 			tlsConfig, err := cfg.TLSConfig()
 			if err != nil {
-				fmt.Println("failed to init redis tls config:", err)
+				fmt.Println("failed to init redisx tls config:", err)
 				os.Exit(1)
 			}
 			redisOptions.TLSConfig = tlsConfig
@@ -89,15 +89,15 @@ func InitRedis(cfg entity.RedisConfig) error {
 		redisClient = redis.NewFailoverClient(redisOptions)
 
 	default:
-		fmt.Println("failed to init redis , redis type is illegal:", cfg.RedisType)
+		fmt.Println("failed to init redisx , redisx type is illegal:", cfg.RedisType)
 		os.Exit(1)
 	}
 
 	err := redisClient.Ping(context.Background()).Err()
 	if err != nil {
-		fmt.Println("failed to ping redis:", err)
+		fmt.Println("failed to ping redisx:", err)
 		os.Exit(1)
 	}
-	common.Redisx = redisClient
+	common.RedisCache = redisClient
 	return nil
 }

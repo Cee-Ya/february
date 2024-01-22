@@ -15,8 +15,8 @@ type RedisUtils struct {
 }
 
 func NewRedisUtils(ctx context.Context) *RedisUtils {
-	expire = common.GlobalConfig.Redis.KeyExpire * time.Second
-	return &RedisUtils{ctx, common.Redisx}
+	expire = common.GlobalConfig.Cache.KeyExpire * time.Second
+	return &RedisUtils{ctx, common.RedisCache}
 }
 
 // Lock 分布式锁

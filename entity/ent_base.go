@@ -64,7 +64,7 @@ type Config struct {
 	Server Server
 	Log    LogConfig
 	DB     DB
-	Redis  RedisConfig
+	Cache  CacheConfig
 }
 
 // LogConfig 日志配置
@@ -97,13 +97,14 @@ type DB struct {
 	MaxIdleConns int    // 设置闲置连接数
 }
 
-// RedisConfig Redis配置
-type RedisConfig struct {
-	Addr     string
-	Username string
-	Password string
-	DB       int
-	UseTLS   bool
+// CacheConfig cache配置
+type CacheConfig struct {
+	CacheType consts.CacheType
+	Addr      string
+	Username  string
+	Password  string
+	DB        int
+	UseTLS    bool
 	tls.ClientConfig
 	RedisType        string
 	MasterName       string

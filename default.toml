@@ -41,7 +41,10 @@ MaxIdleConns = 50
 # table prefix
 TablePrefix = ""
 
-[Redis]
+[Cache]
+# redis, memory
+CacheType = "redis"
+
 DB = 5
 # address, ip:port or ip1:port,ip2:port for cluster and sentinel(SentinelAddrs)
 # Addr = "192.168.22.129:6379"

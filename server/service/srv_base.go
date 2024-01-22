@@ -6,19 +6,18 @@ import (
 	"february/common"
 	"february/common/tools"
 	"february/entity"
+	"february/pkg/cache/redisx/utils"
 	"february/pkg/logx"
-	"february/pkg/redis/utils"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 var errStr = "BaseService err:: "
 
-// BaseServiceInterface todo 需要优化缓存，把缓存的东西分离出去，做到职责单一
 type BaseServiceInterface interface {
+	TableName() string //表名
 	EnableCache() bool //是否开启缓存
 	CacheKey() string  //缓存key
-	TableName() string //表名
 }
 
 // BaseService 基础服务
