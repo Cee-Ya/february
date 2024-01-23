@@ -17,3 +17,29 @@
 | crypto     | golang.org/x/crypto             | v0.18.0             | 加密           |
 | gorm       | gorm.io/gorm                    | v1.25.5             | orm软件        |
 
+
+## 打包
+
+### windows + cmd
+```shell
+set GOOS=windows
+set GOARCH=amd64
+go build -o ./bin/february.exe main.go
+```
+
+### windows + powershell
+```shell
+$env:GOOS="windows"
+$env:GOARCH="amd64"
+go build -o ./bin/february.exe main.go
+```
+
+### linux
+```shell
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./bin/february main.go
+```
+
+### mac
+```shell
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ./bin/february main.go
+```

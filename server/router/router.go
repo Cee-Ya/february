@@ -8,6 +8,7 @@ import (
 
 // Init router
 func Init(cfg entity.Server) *gin.Engine {
+	gin.SetMode("release")
 	r := gin.New()
 	r.NoRoute(mid.NoRoute())
 	r.Use(mid.Cors(), mid.XSSFilter(cfg.XssWhitelist), mid.GinLogger(), mid.GinRecovery(true))

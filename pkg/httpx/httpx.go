@@ -20,8 +20,8 @@ func Init(cfg entity.Server, handler http.Handler) func() {
 	}
 
 	go func() {
-		fmt.Println("http listening on:", addr)
-
+		fmt.Println("Http listening on:", addr)
+		fmt.Println("#######################################")
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)

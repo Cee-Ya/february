@@ -28,7 +28,7 @@ import (
 
 func InitRedis(cfg entity.CacheConfig) error {
 	var redisClient entity.Redis
-	fmt.Println("redisx mode:", cfg.RedisType)
+	fmt.Println("Redis mode:", cfg.RedisType)
 	switch cfg.RedisType {
 	case "standalone", "":
 		redisOptions := &redis.Options{
