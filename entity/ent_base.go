@@ -99,12 +99,11 @@ type DB struct {
 
 // CacheConfig cache配置
 type CacheConfig struct {
-	CacheType consts.CacheType
-	Addr      string
-	Username  string
-	Password  string
-	DB        int
-	UseTLS    bool
+	Addr     string
+	Username string
+	Password string
+	DB       int
+	UseTLS   bool
 	tls.ClientConfig
 	RedisType        string
 	MasterName       string
