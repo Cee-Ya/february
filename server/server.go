@@ -27,7 +27,6 @@ func Initialize(path, configName string) (func(), error) {
 	}
 
 	// init redis
-	// todo 选择缓存模式
 	if err = redisx.InitRedis(common.GlobalConfig.Cache); err != nil {
 		return nil, err
 	}
