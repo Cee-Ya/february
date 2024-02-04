@@ -1,0 +1,27 @@
+package entity
+
+import "gorm.io/plugin/soft_delete"
+
+// {{.ClassName}} {{.TableComment}}
+type {{.ClassName}} struct {
+	BaseEntity
+    {{ range .Columns -}}
+
+    {{- if eq .ColumnName "del_flag" }}
+    DeletedAt soft_delete.DeletedAt `gorm:"column:del_flag" json:"-"`
+    {{- else if not (or (eq .ColumnName "id") (eq .ColumnName "create_time") (eq .ColumnName "modify_time") (eq .ColumnName "version")) }}
+    {{.ColName}} {{.ColType}} `gorm:"column:{{.ColumnName}}" json:"{{.JsonTag}}" comment:"{{- if eq .ColumnComment "" -}}{{.ColumnName}}{{- else -}}{{.ColumnComment}}{{end -}}"` {{end -}}
+    {{- end}}
+}
+
+func ({{.ClassName}}) TableName() string {
+	return "{{.TableName}}"
+}
+
+func ({{.ClassName}}) EnableCache() bool {
+	return false
+}
+
+func ({{.ClassName}}) CacheKey() string {
+	return ""
+}

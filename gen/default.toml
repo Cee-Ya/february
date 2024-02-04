@@ -1,0 +1,25 @@
+[Gen]
+# template path
+AbsPath = "./gen/template/"
+# result path
+DomainTargetPath = "./gen/result/domain/"
+ServiceTargetPath = "./gen/result/service/"
+ApiTargetPath = "./gen/result/api/"
+
+
+[Database]
+Debug = true
+# dbType can be "mysql", "postgres"
+DBType = "mysql"
+#postgres: host=%s port=%s user=%s dbname=%s password=%s sslmode=%s
+#DSN = "host=localhost port=5432 user=postgres dbname=december password=123456 sslmode=disable"
+DSN = "root:uMIekWqK1P7lTIld@tcp(192.168.13.231:3306)/december?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true"
+# unit: s
+MaxLifetime = 7200
+# max open connections
+MaxOpenConns = 150
+# max idle connections
+MaxIdleConns = 50
+# table prefix
+TablePrefix = "t_"
+

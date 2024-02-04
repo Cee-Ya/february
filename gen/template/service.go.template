@@ -1,0 +1,16 @@
+package service
+
+import (
+	"ai-report/common"
+	"ai-report/entity"
+	"github.com/gin-gonic/gin"
+)
+
+type {{.ClassName}}Service struct {
+	*BaseService[entity.{{.ClassName}}]
+}
+
+func New{{.ClassName}}Service(ctx *gin.Context) *{{.ClassName}}Service {
+	c := common.GetTraceCtx(ctx)
+	return &{{.ClassName}}Service{NewService[entity.{{.ClassName}}](c, &entity.{{.ClassName}}{})}
+}

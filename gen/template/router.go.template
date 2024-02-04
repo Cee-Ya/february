@@ -1,0 +1,15 @@
+package router
+
+import (
+	"ai-report/pkg/ginx/render"
+	"ai-report/server/service"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Get{{.ClassName}}List 获取所有数据
+func Get{{.ClassName}}List(ctx *gin.Context) {
+	render.Result(ctx).DangerRender(service.New{{.ClassName}}Service(ctx).FindList(func(where *gorm.DB) {
+		where.Order("id desc")
+	}))
+}
