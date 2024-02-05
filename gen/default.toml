@@ -1,4 +1,6 @@
 [Gen]
+# enable cache
+EnableCache = false
 # template path
 AbsPath = "./gen/template/"
 # result path

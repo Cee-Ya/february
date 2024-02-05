@@ -9,6 +9,7 @@ compiler.xml
 *.log
 temp/
 swag.exe
+/gen/result/
 
 swagger.json
 docs.go

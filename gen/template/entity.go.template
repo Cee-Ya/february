@@ -6,7 +6,6 @@ import "gorm.io/plugin/soft_delete"
 type {{.ClassName}} struct {
 	BaseEntity
     {{ range .Columns -}}
-
     {{- if eq .ColumnName "del_flag" }}
     DeletedAt soft_delete.DeletedAt `gorm:"column:del_flag" json:"-"`
     {{- else if not (or (eq .ColumnName "id") (eq .ColumnName "create_time") (eq .ColumnName "modify_time") (eq .ColumnName "version")) }}
@@ -19,9 +18,17 @@ func ({{.ClassName}}) TableName() string {
 }
 
 func ({{.ClassName}}) EnableCache() bool {
+    {{- if .CacheName}}
+    return true
+    {{- else}}
 	return false
+    {{- end}}
 }
 
 func ({{.ClassName}}) CacheKey() string {
+    {{- if .CacheName}}
+    return "{{.CacheName}}"
+    {{- else}}
 	return ""
+    {{- end}}
 }

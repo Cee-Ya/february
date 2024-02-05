@@ -55,3 +55,29 @@ func TestFormatJsonColumn(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateCacheName(t *testing.T) {
+	type args struct {
+		tableName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test1",
+			args: args{
+				tableName: "User",
+			},
+			want: "cache::sys::role::",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CreateCacheName(tt.args.tableName); got != tt.want {
+				t.Errorf("CreateCacheName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -8,6 +8,7 @@ import (
 var C = new(Config)
 
 type GenConf struct {
+	EnableCache       bool   // enable cache
 	AbsPath           string // absolute path
 	TargetPath        string // target result
 	DomainTargetPath  string // domain target result
@@ -21,10 +22,10 @@ type Config struct {
 	Gen      GenConf
 }
 
-func MustLoad(path string) {
-	viper.SetConfigName("default")
-	viper.SetConfigType("toml")
-	viper.AddConfigPath("./gen/")
+func MustLoad(path, configName, ty string) {
+	viper.SetConfigName(configName)
+	viper.SetConfigType(ty)
+	viper.AddConfigPath(path)
 	if err := viper.ReadInConfig(); err != nil {
 		panic(err)
 	}

@@ -41,20 +41,16 @@ func GenCode(tableNameAttr []string) {
 	for _, s := range tableNameAttr {
 		for index := range tables {
 			if tables[index].TableName == s {
-				tables[index].ClassName = tools.FormatStructName(conf.C.Database.TablePrefix, tables[index].TableName)
-				tables[index].LowerCaseClassName = tools.FormatJsonColumn(conf.C.Database.TablePrefix, tables[index].TableName)
+				tables[index].InitClassName(conf.C.Database.TablePrefix)
+				tables[index].InitLowerCaseClassName(conf.C.Database.TablePrefix)
+				tables[index].InitCacheName(conf.C.Gen.EnableCache)
 				columns, err := genSvr.GetColumn(tables[index].TableName)
 				if err != nil {
 					panic(fmt.Sprintf("get columns failed, err: %v", err))
 				}
 				tables[index].Columns = genSvr.InitColumn(columns)
 				// if columns type constains time.Time, add import time
-				for _, c := range tables[index].Columns {
-					if c.ColType == "time.Time" {
-						tables[index].HasTime = true
-						break
-					}
-				}
+				tables[index].InitHasTime()
 				// 4. generate code
 				// model
 				t1, err := template.ParseFiles(conf.C.Gen.AbsPath + "entity.go.template")

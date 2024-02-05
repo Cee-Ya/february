@@ -15,6 +15,21 @@ func PathCreate(dir string) error {
 	return os.MkdirAll(dir, os.ModePerm)
 }
 
+// CreateCacheName 返回缓存名称
+// 例如输入 User 返回cache::user::
+// 输入 AiLog 返回cache::ai::log::
+func CreateCacheName(clazzName string) string {
+	cacheName := "cache"
+	for _, v := range clazzName {
+		if unicode.IsUpper(v) {
+			cacheName += "::"
+		}
+		cacheName += strings.ToLower(string(v))
+	}
+	cacheName += "::"
+	return cacheName
+}
+
 // FormatStructName 格式化结构体名称和字段名称  首字母大写
 func FormatStructName(prefix, tableName string) string {
 	if prefix != "" {
