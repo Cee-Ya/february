@@ -7,3 +7,9 @@ const (
 
 	ResponseData = "response_data"
 )
+
+// db
+const (
+	Deleted    = 1
+	NotDeleted = 0
+)

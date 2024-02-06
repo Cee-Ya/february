@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"february/common"
+	"february/common/consts"
 	"february/common/tools"
 	"february/entity"
 	"february/pkg/cache/redisx/utils"
@@ -279,7 +280,7 @@ func (b *BaseService[T]) FindPageList(condition func(where *gorm.DB), page *enti
 		//全局默认按id倒序
 		db.Order("id desc")
 	}
-	if err = db.Count(&res.Total).Error; err != nil {
+	if err = db.Unscoped().Where("del_flag = ?", consts.NotDeleted).Count(&res.Total).Error; err != nil {
 		b.Error(zap.Error(err))
 		return
 	}
