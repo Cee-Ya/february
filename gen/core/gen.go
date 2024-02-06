@@ -44,6 +44,7 @@ func GenCode(tableNameAttr []string) {
 				tables[index].InitClassName(conf.C.Database.TablePrefix)
 				tables[index].InitLowerCaseClassName(conf.C.Database.TablePrefix)
 				tables[index].InitCacheName(conf.C.Gen.EnableCache)
+				name := tools.FormatCamelToSnake(tables[index].ClassName)
 				columns, err := genSvr.GetColumn(tables[index].TableName)
 				if err != nil {
 					panic(fmt.Sprintf("get columns failed, err: %v", err))
@@ -90,9 +91,9 @@ func GenCode(tableNameAttr []string) {
 				}
 
 				// 5. write to file
-				tools.FileCreate(b1, conf.C.Gen.DomainTargetPath+"ent_"+tables[index].LowerCaseClassName+".go")
-				tools.FileCreate(b2, conf.C.Gen.ServiceTargetPath+"srv_"+tables[index].LowerCaseClassName+".go")
-				tools.FileCreate(b3, conf.C.Gen.ApiTargetPath+"router_"+tables[index].LowerCaseClassName+".go")
+				tools.FileCreate(b1, conf.C.Gen.DomainTargetPath+"ent_"+name+".go")
+				tools.FileCreate(b2, conf.C.Gen.ServiceTargetPath+"srv_"+name+".go")
+				tools.FileCreate(b3, conf.C.Gen.ApiTargetPath+"router_"+name+".go")
 			}
 		}
 	}

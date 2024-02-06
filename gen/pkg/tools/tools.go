@@ -30,6 +30,22 @@ func CreateCacheName(clazzName string) string {
 	return cacheName
 }
 
+// FormatCamelToSnake 驼峰转蛇形
+func FormatCamelToSnake(text string) string {
+	var result string
+	for i, v := range text {
+		if unicode.IsUpper(v) {
+			if i != 0 {
+				result += "_"
+			}
+			result += strings.ToLower(string(v))
+		} else {
+			result += string(v)
+		}
+	}
+	return result
+}
+
 // FormatStructName 格式化结构体名称和字段名称  首字母大写
 func FormatStructName(prefix, tableName string) string {
 	if prefix != "" {

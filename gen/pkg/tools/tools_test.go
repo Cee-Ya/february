@@ -81,3 +81,29 @@ func TestCreateCacheName(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatCamelToSnake(t *testing.T) {
+	type args struct {
+		text string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "test1",
+			args: args{
+				text: "SysRole",
+			},
+			want: "sys_role",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FormatCamelToSnake(tt.args.text); got != tt.want {
+				t.Errorf("FormatCamelToSnake() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
