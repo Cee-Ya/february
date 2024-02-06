@@ -42,7 +42,7 @@ func (r *Response) DangerRender(res any, err error) {
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
 		logx.ErrorF(ctx, "DangerRender:: ", zap.Error(err))
-		r.Error(err)
+		panic(err)
 	}
 	r.Ok(res)
 }
@@ -56,7 +56,7 @@ func (r *Response) Dangers(err ...error) *Response {
 		if e != nil {
 			ctx := common.GetTraceCtx(r.Ctx)
 			logx.ErrorF(ctx, "Dangers:: ", zap.Error(e))
-			r.Error(e)
+			panic(e)
 		}
 	}
 	return r
@@ -70,7 +70,7 @@ func (r *Response) Danger(err error) *Response {
 	if err != nil {
 		ctx := common.GetTraceCtx(r.Ctx)
 		logx.ErrorF(ctx, "Danger:: ", zap.Error(err))
-		r.Error(err)
+		panic(err)
 	}
 	return r
 }
