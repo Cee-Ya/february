@@ -81,7 +81,7 @@ func (u *UserService) Update(update vo.UserUpdateVo) error {
 	if update.Id == 0 {
 		return errors.New("id is required")
 	}
-	return u.orm.WithContext(u.ctx).Transaction(func(tx *gorm.DB) error {
+	return u.orm.Transaction(func(tx *gorm.DB) error {
 		var err error
 		// 判断用户是否存在
 		if _, err = u.FindById(update.Id); err != nil {
